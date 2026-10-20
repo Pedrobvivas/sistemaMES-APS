@@ -93,3 +93,55 @@ jobs:
             test-results/
             playwright-report/
           if-no-files-found: ignore
+
+  # Reproduz o deploy da VPS (infra/vps): build dentro do node:22-alpine com a pasta
+  # montada e o servidor subindo do mesmo jeito da stack Swarm.
+  simular-vps:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: mes
+          POSTGRES_PASSWORD: mes
+          POSTGRES_DB: mes
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U mes -d mes"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Arquivo de ambiente (como /root/mes.env)
+        run: |
+          {
+            echo "DATABASE_URL=postgres://mes:mes@127.0.0.1:5432/mes"
+            echo "BETTER_AUTH_SECRET=segredo-somente-para-o-ci-nao-usar-em-producao"
+            echo "BETTER_AUTH_URL=http://localhost:3000"
+            echo "NEXT_PUBLIC_APP_NAME=Camargo MES"
+            echo "FUSO_FABRICA=America/Sao_Paulo"
+          } > /tmp/mes.env
+
+      - name: Build igual ao da VPS
+        run: docker run --rm --env-file /tmp/mes.env -v "$PWD":/app node:22-alpine sh /app/infra/vps/build.sh
+
+      - name: Subir igual à stack e conferir
+        run: |
+          docker run -d --name mes --network host --env-file /tmp/mes.env \
+            -e PORT=3000 -e HOSTNAME=0.0.0.0 -e NODE_ENV=production -e TZ=America/Sao_Paulo \
+            -v "$PWD":/app -w /app/.next/standalone node:22-alpine node server.js
+          code=000
+          for i in $(seq 1 60); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/configurar || true)
+            [ "$code" = "200" ] && break
+            sleep 2
+          done
+          docker logs mes 2>&1 | tail -20
+          echo "GET /configurar -> $code"
+          if [ "$code" != "200" ]; then
+            msg=$(docker logs mes 2>&1 | tail -c 4000 | sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g')
+            echo "::error title=VPS simulada respondeu $code::${msg}"
+            exit 1
+          fi
+          docker logs mes 2>&1 | grep -q "Banco atualizado" || { echo "::error title=VPS simulada::migrations não rodaram"; exit 1; }

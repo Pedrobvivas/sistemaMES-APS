@@ -1,0 +1,42 @@
+version: "3.7"
+
+services:
+  app:
+    image: node:22-alpine
+    working_dir: /app/.next/standalone
+    command: ["node", "server.js"]
+    env_file:
+      - /root/mes.env
+    environment:
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+      - NODE_ENV=production
+      - TZ=America/Sao_Paulo
+    volumes:
+      - /opt/mes:/app
+    networks:
+      - network_public
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 768M
+      restart_policy:
+        condition: any
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.mes.rule=Host(`mes.camargoti.cloud`)
+        - traefik.http.routers.mes.entrypoints=websecure
+        - traefik.http.routers.mes.tls.certresolver=letsencryptresolver
+        - traefik.http.routers.mes.service=mes
+        - traefik.http.services.mes.loadbalancer.server.port=3000
+
+networks:
+  network_public:
+    external: true
+    name: network_public

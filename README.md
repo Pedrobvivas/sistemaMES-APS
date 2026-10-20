@@ -54,15 +54,21 @@ Abra http://localhost:3000, crie o administrador e vá em **Sistema → Carregar
 
 O GitHub Actions (`.github/workflows/ci.yml`) roda tudo a cada push: testes, migration, typecheck, build e e2e.
 
-## Publicar na VPS (Docker Swarm + Portainer + Traefik)
+## Publicar na VPS (Docker Swarm + Traefik, padrão Camargo TI)
 
-A VPS da Camargo TI usa Swarm com Traefik e a rede `network_public` (ver Notion "Instalação VPS"). O README do projeto-base cita Coolify, que não é o que está instalado.
+Mesmo padrão do VivasBarber: o código fica em `/opt/mes`, a stack em `/root/mes.yaml` e os segredos em `/root/mes.env` (fora do Git). A diferença é um passo de build, porque é Next.js.
 
-1. Crie um banco e um usuário dedicados no Postgres existente (não use o usuário `admin`).
-2. Gere a imagem (`docker build -t sistema-mes-aps .`) e publique em um registro.
-3. Crie a stack no Portainer com rótulos do Traefik para o domínio (ex.: `mes.camargoti.cloud`) e as variáveis `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `NEXT_PUBLIC_APP_NAME` (no build), `SMTP_*`.
-4. As migrations rodam sozinhas ao iniciar.
-5. Configure backup diário do banco antes de qualquer dado real.
+- `infra/vps/build.sh`: build dentro do `node:22-alpine` (mesma imagem que roda o sistema).
+- `infra/vps/mes.yaml`: stack Swarm com os rótulos do Traefik para `mes.camargoti.cloud`.
+- O job `simular-vps` do CI repete esse processo a cada push.
+
+Atualizar depois de mudanças no GitHub:
+
+```bash
+cd /opt/mes && git pull \
+  && docker run --rm --env-file /root/mes.env -v /opt/mes:/app node:22-alpine sh /app/infra/vps/build.sh \
+  && docker service update --force mes_app
+```
 
 ## Limitações conhecidas do protótipo
 
