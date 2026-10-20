@@ -63,7 +63,7 @@ jobs:
       # Se falhar, publica o fim do log como anotação de erro da execução.
       - name: Subir o servidor e conferir
         run: |
-          cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/
+          cp -r .next/static .next/standalone/.next/ && cp -r public drizzle .next/standalone/
           HOSTNAME=0.0.0.0 PORT=3000 node .next/standalone/server.js > servidor.log 2>&1 &
           PID=$!
           code=000
