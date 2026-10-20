@@ -7,6 +7,22 @@ const OPERADOR = { nome: "Operador Teste", email: "operador@teste.local", senha:
 
 test.describe.configure({ mode: "serial" });
 
+// Uma única sessão do navegador para todos os passos: o Better Auth limita
+// tentativas de login seguidas, e o fluxo real é de um usuário só.
+let page: Page;
+test.beforeAll(async ({ browser }) => {
+  page = await browser.newPage({
+    baseURL: "http://localhost:3000",
+    locale: "pt-BR",
+    timezoneId: "America/Sao_Paulo",
+    viewport: { width: 1440, height: 900 },
+  });
+  page.on("dialog", (d) => d.accept());
+});
+test.afterAll(async () => {
+  await page.close();
+});
+
 async function entrar(page: Page, email: string, senha: string) {
   await page.goto("/entrar");
   await page.getByLabel("E-mail").fill(email);
@@ -35,7 +51,7 @@ async function arrastar(page: Page, barra: ReturnType<Page["locator"]>, dx: numb
   await page.mouse.up();
 }
 
-test("configuração inicial e carga da demonstração", async ({ page }) => {
+test("configuração inicial e carga da demonstração", async () => {
   await page.goto("/configurar");
   await page.getByLabel("Seu nome").fill(ADMIN.nome);
   await page.getByLabel("E-mail").fill(ADMIN.email);
@@ -47,14 +63,12 @@ test("configuração inicial e carga da demonstração", async ({ page }) => {
   await expect(page).toHaveURL(/\/painel/);
 
   await abrir(page, "/sistema");
-  page.on("dialog", (d) => d.accept());
   await page.getByRole("button", { name: "Carregar demonstração" }).click();
   await expect(page.getByText("Dados de demonstração carregados e programação aprovada")).toBeVisible({ timeout: 60_000 });
   await expect(page.getByText("Demonstração · dados fictícios")).toBeVisible();
 });
 
-test("Gantt: arrastar a OP gera versão sugerida com antes × depois e data fixada", async ({ page }) => {
-  await entrar(page, ADMIN.email, ADMIN.senha);
+test("Gantt: arrastar a OP gera versão sugerida com antes × depois e data fixada", async () => {
   await abrir(page, "/programacao");
   await expect(page.getByText("Aprovada · em vigor")).toBeVisible();
   await page.screenshot({ path: "test-results/01-gantt-aprovado.png", fullPage: true });
@@ -72,8 +86,7 @@ test("Gantt: arrastar a OP gera versão sugerida com antes × depois e data fixa
   await page.screenshot({ path: "test-results/02-gantt-sugerido.png", fullPage: true });
 });
 
-test("Gantt: só a operação, antes da anterior, é recusado com explicação", async ({ page }) => {
-  await entrar(page, ADMIN.email, ADMIN.senha);
+test("Gantt: só a operação, antes da anterior, é recusado com explicação", async () => {
   await abrir(page, "/programacao");
   await page.getByText("Só a operação", { exact: true }).click();
   const corte = page.locator('button[aria-label^="OP 4310 · Corte."]');
@@ -87,8 +100,7 @@ test("Gantt: só a operação, antes da anterior, é recusado com explicação",
   await expect(page.getByText("Sugerida · aguardando aprovação")).toBeVisible(); // nada mudou
 });
 
-test("Gantt: painel de detalhes explica a posição e a versão é aprovada", async ({ page }) => {
-  await entrar(page, ADMIN.email, ADMIN.senha);
+test("Gantt: painel de detalhes explica a posição e a versão é aprovada", async () => {
   await abrir(page, "/programacao");
   await page.locator('button[aria-label^="OP 4306 · Corte."]').click();
   await expect(page.getByRole("heading", { name: "OP 4306 · Corte" })).toBeVisible();
@@ -97,8 +109,7 @@ test("Gantt: painel de detalhes explica a posição e a versão é aprovada", as
   await expect(page.getByText("Aprovada · em vigor")).toBeVisible({ timeout: 30_000 });
 });
 
-test("terminal: iniciar, pausar com motivo, retomar e finalizar", async ({ page }) => {
-  await entrar(page, ADMIN.email, ADMIN.senha);
+test("terminal: iniciar, pausar com motivo, retomar e finalizar", async () => {
   await abrir(page, "/terminal");
   await page.getByRole("link", { name: /Bancada de testes|Puncionadeira CNC/ }).first().click();
   await page.getByLabel("Operador").selectOption({ label: "1001 · Bruno Lima" });
@@ -118,8 +129,7 @@ test("terminal: iniciar, pausar com motivo, retomar e finalizar", async ({ page 
   await page.screenshot({ path: "test-results/03-terminal.png", fullPage: true });
 });
 
-test("painel abre com indicadores e Pareto", async ({ page }) => {
-  await entrar(page, ADMIN.email, ADMIN.senha);
+test("painel abre com indicadores e Pareto", async () => {
   await abrir(page, "/painel");
   await expect(page.getByRole("heading", { name: "OPs que pedem atenção" })).toBeVisible();
   await expect(page.getByRole("heading", { name: /Paradas dos últimos/ })).toBeVisible();
@@ -127,8 +137,7 @@ test("painel abre com indicadores e Pareto", async ({ page }) => {
   await page.screenshot({ path: "test-results/04-painel.png", fullPage: true });
 });
 
-test("perfil operador só acessa o terminal", async ({ page }) => {
-  await entrar(page, ADMIN.email, ADMIN.senha);
+test("perfil operador só acessa o terminal", async () => {
   await abrir(page, "/usuarios");
   await page.getByLabel("Nome", { exact: true }).fill(OPERADOR.nome);
   await page.getByLabel("E-mail").fill(OPERADOR.email);
