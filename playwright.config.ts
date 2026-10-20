@@ -21,7 +21,7 @@ export default defineConfig({
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } } }],
   webServer: {
     // Mesmo servidor da imagem Docker (output: standalone).
-    command: "cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/ && PORT=3000 node .next/standalone/server.js",
+    command: "cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/ && HOSTNAME=0.0.0.0 PORT=3000 node .next/standalone/server.js",
     url: "http://localhost:3000/entrar",
     timeout: 120_000,
     reuseExistingServer: !process.env.CI,
