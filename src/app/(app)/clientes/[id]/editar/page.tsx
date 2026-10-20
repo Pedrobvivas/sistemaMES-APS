@@ -5,7 +5,7 @@ import { z } from "zod";
 import { CabecalhoPagina } from "@/components/ui/feedback";
 import { db } from "@/db";
 import { clientes } from "@/db/schema";
-import { requireSession } from "@/lib/session";
+import { exigirPermissao } from "@/lib/session";
 import { formatarData } from "@/lib/utils";
 import { BotaoExcluirCliente } from "../../botao-excluir";
 import { FormCliente } from "../../form";
@@ -13,7 +13,7 @@ import { FormCliente } from "../../form";
 export const metadata: Metadata = { title: "Editar cliente" };
 
 export default async function EditarClientePage({ params }: { params: Promise<{ id: string }> }) {
-  const { user } = await requireSession();
+  const { user } = await exigirPermissao("ordens:editar");
   const { id } = await params;
   if (!z.string().uuid().safeParse(id).success) notFound();
 

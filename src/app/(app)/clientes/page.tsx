@@ -8,13 +8,13 @@ import { Input } from "@/components/ui/form";
 import { Table, Td, Th } from "@/components/ui/table";
 import { db } from "@/db";
 import { clientes } from "@/db/schema";
-import { requireSession } from "@/lib/session";
+import { exigirPermissao } from "@/lib/session";
 import { formatarData } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Clientes" };
 
 export default async function ClientesPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
-  await requireSession();
+  await exigirPermissao("ordens:editar");
   const { q = "" } = await searchParams;
   const busca = q.trim();
 
@@ -29,7 +29,7 @@ export default async function ClientesPage({ searchParams }: { searchParams: Pro
     <div className="flex flex-col gap-6">
       <CabecalhoPagina
         titulo="Clientes"
-        descricao="Cadastro de exemplo: use como molde para novas telas."
+        descricao="Clientes associados às ordens de produção."
         acoes={
           <Link href="/clientes/novo" className={buttonClasses()}>
             <Icone nome="mais" tamanho={18} />

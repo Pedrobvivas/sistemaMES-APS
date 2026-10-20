@@ -8,7 +8,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/db";
 import { clientes } from "@/db/schema";
-import { requireAdmin, requireSession } from "@/lib/session";
+import { exigirPermissao, requireAdmin } from "@/lib/session";
 
 const opcional = z
   .string()
@@ -36,7 +36,7 @@ export async function salvarCliente(
   _: EstadoCliente,
   formData: FormData,
 ): Promise<EstadoCliente> {
-  await requireSession();
+  await exigirPermissao("ordens:editar");
 
   const dados = esquema.safeParse(Object.fromEntries(formData));
   if (!dados.success) return lerErros(dados.error);
