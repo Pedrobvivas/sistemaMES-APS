@@ -123,6 +123,12 @@ test("OP criada pode ser reaberta pela lista, antes e depois de liberar", async 
   // Sai da tela e volta pela lista.
   await abrir(page, "/painel");
   await abrir(page, "/ordens");
+  // Clique em qualquer parte da linha (aqui, na coluna do produto) abre a OP.
+  await page.getByRole("row").filter({ hasText: "9001" }).getByRole("cell").nth(1).click();
+  await expect(page).toHaveURL(new RegExp(urlDaOp.replace(/^.*\/ordens/, "/ordens") + "$"));
+  await expect(page.getByRole("heading", { name: "OP 9001" })).toBeVisible();
+  // E o link do código continua funcionando.
+  await abrir(page, "/ordens");
   await page.getByRole("link", { name: "9001", exact: true }).click();
   await expect(page).toHaveURL(new RegExp(urlDaOp.replace(/^.*\/ordens/, "/ordens") + "$"));
   await expect(page.getByRole("heading", { name: "OP 9001" })).toBeVisible();

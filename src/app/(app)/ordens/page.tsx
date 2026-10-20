@@ -6,6 +6,7 @@ import { Button, buttonClasses } from "@/components/ui/button";
 import { Badge, CabecalhoPagina, Vazio } from "@/components/ui/feedback";
 import { Input, Select } from "@/components/ui/form";
 import { PrioridadeBadge, StatusOrdemBadge } from "@/components/ui/status";
+import { LinhaLink } from "@/components/ui/linha-link";
 import { Table, Td, Th } from "@/components/ui/table";
 import { db } from "@/db";
 import { clientes, ordensProducao, produtos } from "@/db/schema";
@@ -155,7 +156,7 @@ export default async function OrdensPage({
               {lista.map(({ o, produto, produtoCodigo, cliente }) => {
                 const p = previsao.get(o.id);
                 return (
-                  <tr key={o.id} className="hover:bg-surface-2">
+                  <LinhaLink key={o.id} href={`/ordens/${o.id}`}>
                     <Td>
                       <Link href={`/ordens/${o.id}`} className="inline-flex min-h-11 items-center font-mono font-semibold text-destaque hover:underline">
                         {o.codigo}
@@ -194,7 +195,7 @@ export default async function OrdensPage({
                     <Td>
                       <StatusOrdemBadge status={o.status} />
                     </Td>
-                  </tr>
+                  </LinhaLink>
                 );
               })}
             </tbody>

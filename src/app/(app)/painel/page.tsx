@@ -4,6 +4,7 @@ import { Icone } from "@/components/layout/icone";
 import { buttonClasses } from "@/components/ui/button";
 import { Card, CardDescricao } from "@/components/ui/card";
 import { Alerta, Badge, CabecalhoPagina, Vazio } from "@/components/ui/feedback";
+import { LinhaLink } from "@/components/ui/linha-link";
 import { Table, Td, Th } from "@/components/ui/table";
 import { formatarCurto, formatarDuracao } from "@/domain/tempo";
 import { pode } from "@/lib/papeis";
@@ -84,7 +85,7 @@ export default async function PainelPage() {
               </thead>
               <tbody>
                 {p.atencao.slice(0, 10).map((a) => (
-                  <tr key={a.id}>
+                  <LinhaLink key={a.id} href={`/ordens/${a.id}`}>
                     <Td>
                       <Link href={`/ordens/${a.id}`} className="inline-flex min-h-11 items-center font-mono font-semibold text-destaque hover:underline">
                         {a.codigo}
@@ -98,7 +99,7 @@ export default async function PainelPage() {
                         {a.atrasoMin > 0 ? ` · ${formatarDuracao(a.atrasoMin)}` : ""}
                       </Badge>
                     </Td>
-                  </tr>
+                  </LinhaLink>
                 ))}
               </tbody>
             </Table>
