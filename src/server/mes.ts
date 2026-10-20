@@ -13,7 +13,14 @@ import {
   programacaoItens,
   recursos,
 } from "@/db/schema";
-import { rotuloEvento, validarEvento, type TipoEvento } from "@/domain/mes/execucao";
+import { validarEvento, type TipoEvento } from "@/domain/mes/execucao";
+
+const registrado: Record<TipoEvento, string> = {
+  inicio: "Início registrado",
+  pausa: "Pausa registrada",
+  retomada: "Retomada registrada",
+  fim: "Finalização registrada",
+};
 import { statusPelasOperacoes } from "@/domain/ordens/status";
 import { programacaoAprovada, type Resultado } from "@/server/aps/programacoes";
 
@@ -38,7 +45,7 @@ export async function registrarEvento(cmd: ComandoEvento, usuarioId: string): Pr
       .from(eventosExecucao)
       .where(eq(eventosExecucao.chaveIdempotencia, cmd.chaveIdempotencia))
       .limit(1);
-    if (repetido) return { ok: true as const, duplicado: true, mensagem: `${rotuloEvento[repetido.tipo as TipoEvento]} já registrado.` };
+    if (repetido) return { ok: true as const, duplicado: true, mensagem: `${registrado[repetido.tipo as TipoEvento]} (toque repetido ignorado).` };
 
     const [op] = await tx.select().from(operacoesOrdem).where(eq(operacoesOrdem.id, cmd.operacaoId)).for("update");
     if (!op) return { ok: false as const, erro: "Operação não encontrada." };
@@ -141,7 +148,7 @@ export async function registrarEvento(cmd: ComandoEvento, usuarioId: string): Pr
       await tx.insert(ordemHistorico).values({ ordemId: ordem.id, de: ordem.status, para: novoStatusOrdem, usuarioId, motivo: "Apontamento de produção" });
     }
 
-    return { ok: true as const, mensagem: `${rotuloEvento[cmd.tipo]} registrado: OP ${ordem.codigo} · ${op.nome}.` };
+    return { ok: true as const, mensagem: `${registrado[cmd.tipo]}: OP ${ordem.codigo} · ${op.nome}.` };
   });
 }
 

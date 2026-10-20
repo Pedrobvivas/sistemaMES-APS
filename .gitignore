@@ -15,3 +15,7 @@ next-env.d.ts
 # logs e sistema
 npm-debug.log*
 .DS_Store
+
+# Testes de ponta a ponta
+test-results/
+playwright-report/

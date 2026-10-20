@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+          POSTGRES_DB: app
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U app -d app"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://app:app@127.0.0.1:5432/app
+      BETTER_AUTH_SECRET: segredo-somente-para-o-ci-nao-usar-em-producao
+      BETTER_AUTH_URL: http://localhost:3000
+      NEXT_PUBLIC_APP_NAME: Camargo MES
+      TZ: America/Sao_Paulo
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Instalar dependências
+        run: |
+          if [ -f package-lock.json ]; then npm ci --no-audit; else npm install --no-audit; fi
+
+      - name: Testes do domínio (sequenciador, arraste, MES)
+        run: npm test
+
+      - name: Gerar migration se ainda não existir
+        run: |
+          if [ ! -f drizzle/meta/_journal.json ]; then npm run db:generate; fi
+
+      - name: Guardar migration e package-lock gerados
+        uses: actions/upload-artifact@v4
+        with:
+          name: gerados
+          path: |
+            drizzle/
+            package-lock.json
+
+      - name: Checagem de tipos
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+
+      - name: Instalar navegador dos testes
+        run: npx playwright install --with-deps chromium
+
+      - name: Testes de ponta a ponta
+        run: npx playwright test
+
+      - name: Relatório e capturas
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e
+          path: |
+            test-results/
+            playwright-report/
+          if-no-files-found: ignore

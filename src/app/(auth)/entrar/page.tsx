@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Entrar" };
 
 export default async function EntrarPage() {
   if (await precisaConfigurar()) redirect("/configurar");
-  if (await getSession()) redirect("/painel");
+  if (await getSession()) redirect("/");
 
   return (
     <div className="flex flex-col gap-6">
