@@ -1,5 +1,5 @@
 // Ciclo de vida da ordem de produção.
-// rascunho → liberada → em_execucao → concluida ; cancelada a partir de rascunho/liberada.
+// rascunho → liberada → em_execucao → concluida ; cancelada a partir de rascunho/liberada sem apontamentos.
 // "em_execucao" e "concluida" são consequência dos apontamentos, não ação manual.
 import type { StatusOperacao } from "../aps/tipos.ts";
 
@@ -13,17 +13,15 @@ export const rotuloStatusOrdem: Record<StatusOrdem, string> = {
   cancelada: "Cancelada",
 };
 
-export type AcaoOrdem = "liberar" | "voltar_rascunho" | "cancelar";
+export type AcaoOrdem = "liberar" | "cancelar";
 
 const permitidas: Record<AcaoOrdem, StatusOrdem[]> = {
   liberar: ["rascunho"],
-  voltar_rascunho: ["liberada"],
   cancelar: ["rascunho", "liberada"],
 };
 
 const destino: Record<AcaoOrdem, StatusOrdem> = {
   liberar: "liberada",
-  voltar_rascunho: "rascunho",
   cancelar: "cancelada",
 };
 
@@ -33,13 +31,13 @@ export function validarAcaoOrdem(
   opcoes: { operacoesDoRoteiro?: number; algumaIniciada?: boolean } = {},
 ): { ok: true; novoStatus: StatusOrdem } | { ok: false; erro: string } {
   if (!permitidas[acao].includes(status)) {
-    const nomes: Record<AcaoOrdem, string> = { liberar: "liberar", voltar_rascunho: "voltar para rascunho", cancelar: "cancelar" };
+    const nomes: Record<AcaoOrdem, string> = { liberar: "liberar", cancelar: "cancelar" };
     return { ok: false, erro: `Não é possível ${nomes[acao]} uma OP com status "${rotuloStatusOrdem[status]}".` };
   }
   if (acao === "liberar" && !opcoes.operacoesDoRoteiro) {
     return { ok: false, erro: "O produto desta OP não tem operações no roteiro. Cadastre o roteiro antes de liberar." };
   }
-  if ((acao === "cancelar" || acao === "voltar_rascunho") && opcoes.algumaIniciada) {
+  if (acao === "cancelar" && opcoes.algumaIniciada) {
     return { ok: false, erro: "Esta OP já tem apontamentos de produção e não pode ser alterada dessa forma." };
   }
   return { ok: true, novoStatus: destino[acao] };

@@ -4,13 +4,14 @@ import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
+import { papeis, type Papel } from "@/lib/papeis";
 import { requireAdmin } from "@/lib/session";
 
 const esquema = z.object({
   nome: z.string().trim().min(2, "Informe o nome."),
   email: z.string().trim().email("E-mail inválido."),
   senha: z.string().min(8, "Mínimo de 8 caracteres."),
-  papel: z.enum(["user", "admin"]),
+  papel: z.enum(papeis),
 });
 
 export type EstadoUsuario = {
@@ -46,8 +47,9 @@ export async function criarUsuario(_: EstadoUsuario, formData: FormData): Promis
   return { ok: true };
 }
 
-export async function alterarPapel(userId: string, papel: "user" | "admin") {
+export async function alterarPapel(userId: string, papel: Papel) {
   const { user } = await requireAdmin();
+  if (!papeis.includes(papel)) return;
   if (user.id === userId) return; // ninguém tira o próprio acesso de admin
   await auth.api.setRole({ body: { userId, role: papel }, headers: await headers() });
   revalidatePath("/usuarios");

@@ -25,7 +25,7 @@ export function FormEntrar() {
       setEnviando(false);
       return;
     }
-    router.push("/painel");
+    router.push("/");
     router.refresh();
   }
 

@@ -3,9 +3,18 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { admin } from "better-auth/plugins";
+import { createAccessControl } from "better-auth/plugins/access";
+import { adminAc, defaultStatements } from "better-auth/plugins/admin/access";
 import { db } from "@/db";
 import * as schema from "@/db/schema";
 import { sendEmail } from "@/lib/email";
+
+// Só o administrador gerencia usuários pelo Better Auth; as demais permissões
+// do sistema ficam em src/lib/papeis.ts.
+const ac = createAccessControl(defaultStatements);
+const papelAdmin = ac.newRole(adminAc.statements);
+const papelPlanejador = ac.newRole({ user: [], session: [] });
+const papelOperador = ac.newRole({ user: [], session: [] });
 
 export const auth = betterAuth({
   appName: process.env.NEXT_PUBLIC_APP_NAME ?? "Projeto Base",
@@ -37,7 +46,8 @@ export const auth = betterAuth({
     updateAge: 60 * 60 * 24, // renova a cada dia de uso
   },
   plugins: [
-    admin({ defaultRole: "user", adminRoles: ["admin"] }),
+    // Perfis do protótipo (src/lib/papeis.ts). Novo usuário entra com o menor acesso.
+    admin({ ac, roles: { admin: papelAdmin, planejador: papelPlanejador, operador: papelOperador }, defaultRole: "operador", adminRoles: ["admin"] }),
     // Deve ser o último plugin: grava os cookies em server actions.
     nextCookies(),
   ],

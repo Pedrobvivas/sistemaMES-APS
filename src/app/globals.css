@@ -22,6 +22,11 @@
   --destaque-texto: #a0b0f0;
   --sucesso: #4ade80;
   --erro: #f87171;
+  --alerta: #fbbf24;
+  /* Gantt: barra programada e fundo fora do turno */
+  --barra: #2f3fd6;
+  --barra-texto: #ffffff;
+  --fora-turno: #10141b;
 
   --primaria: var(--azul-royal);
   --primaria-hover: var(--azul-profundo);
@@ -40,6 +45,10 @@
   --destaque-texto: #2635cb;
   --sucesso: #15803d;
   --erro: #dc2626;
+  --alerta: #b45309;
+  --barra: #2635cb;
+  --barra-texto: #ffffff;
+  --fora-turno: #e9ebf4;
 
   color-scheme: light;
 }
@@ -59,6 +68,10 @@
   --color-destaque: var(--destaque-texto);
   --color-sucesso: var(--sucesso);
   --color-erro: var(--erro);
+  --color-alerta: var(--alerta);
+  --color-barra: var(--barra);
+  --color-barra-texto: var(--barra-texto);
+  --color-fora-turno: var(--fora-turno);
   --color-primaria: var(--primaria);
   --color-primaria-hover: var(--primaria-hover);
   --color-primaria-texto: var(--primaria-texto);

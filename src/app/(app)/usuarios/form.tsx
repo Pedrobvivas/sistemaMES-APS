@@ -4,6 +4,7 @@ import { useActionState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Alerta } from "@/components/ui/feedback";
 import { Campo, Input, Select } from "@/components/ui/form";
+import { papeis, rotuloPapel } from "@/lib/papeis";
 import { criarUsuario, type EstadoUsuario } from "./actions";
 
 export function FormNovoUsuario() {
@@ -28,10 +29,13 @@ export function FormNovoUsuario() {
       <Campo id="senha" rotulo="Senha inicial" erro={erros.senha} ajuda="A pessoa pode trocar depois em “Esqueci minha senha”.">
         <Input id="senha" name="senha" type="password" autoComplete="new-password" minLength={8} required />
       </Campo>
-      <Campo id="papel" rotulo="Perfil" erro={erros.papel}>
-        <Select id="papel" name="papel" defaultValue="user">
-          <option value="user">Usuário</option>
-          <option value="admin">Administrador</option>
+      <Campo id="papel" rotulo="Perfil" erro={erros.papel} ajuda="Planejador: ordens, cadastros e programação. Operador: só o terminal de produção.">
+        <Select id="papel" name="papel" defaultValue="operador">
+          {papeis.map((p) => (
+            <option key={p} value={p}>
+              {rotuloPapel[p]}
+            </option>
+          ))}
         </Select>
       </Campo>
       <Button type="submit" disabled={enviando}>

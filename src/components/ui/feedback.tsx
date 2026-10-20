@@ -1,12 +1,13 @@
 import { cn } from "@/lib/utils";
 
-type Tom = "neutro" | "sucesso" | "erro" | "destaque";
+type Tom = "neutro" | "sucesso" | "erro" | "destaque" | "alerta";
 
 const tonsBadge: Record<Tom, string> = {
   neutro: "border-borda text-muted",
   sucesso: "border-sucesso/40 text-sucesso",
   erro: "border-erro/40 text-erro",
   destaque: "border-destaque/40 text-destaque",
+  alerta: "border-alerta/50 text-alerta",
 };
 
 export function Badge({ tom = "neutro", className, ...props }: React.HTMLAttributes<HTMLSpanElement> & { tom?: Tom }) {

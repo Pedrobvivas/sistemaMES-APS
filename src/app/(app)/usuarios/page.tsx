@@ -5,6 +5,7 @@ import { Badge, CabecalhoPagina } from "@/components/ui/feedback";
 import { Table, Td, Th } from "@/components/ui/table";
 import { db } from "@/db";
 import { user } from "@/db/schema";
+import { normalizarPapel, rotuloPapel } from "@/lib/papeis";
 import { requireAdmin } from "@/lib/session";
 import { AcoesUsuario } from "./acoes-linha";
 import { FormNovoUsuario } from "./form";
@@ -38,15 +39,13 @@ export default async function UsuariosPage() {
                   <p className="text-xs text-muted">{u.email}</p>
                 </Td>
                 <Td>
-                  <Badge tom={u.role === "admin" ? "destaque" : "neutro"}>
-                    {u.role === "admin" ? "Administrador" : "Usuário"}
-                  </Badge>
+                  <Badge tom={u.role === "admin" ? "destaque" : "neutro"}>{rotuloPapel[normalizarPapel(u.role)]}</Badge>
                 </Td>
                 <Td>
                   {u.id === atual.id ? (
                     <p className="text-right text-xs text-muted">Você</p>
                   ) : (
-                    <AcoesUsuario id={u.id} nome={u.name} papel={u.role ?? "user"} />
+                    <AcoesUsuario id={u.id} nome={u.name} papel={u.role ?? "operador"} />
                   )}
                 </Td>
               </tr>
