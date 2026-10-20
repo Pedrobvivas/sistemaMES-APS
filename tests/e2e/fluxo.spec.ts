@@ -76,8 +76,13 @@ test("Gantt: só a operação, antes da anterior, é recusado com explicação",
   await entrar(page, ADMIN.email, ADMIN.senha);
   await abrir(page, "/programacao");
   await page.getByText("Só a operação", { exact: true }).click();
+  const corte = page.locator('button[aria-label^="OP 4310 · Corte."]');
   const dobra = page.locator('button[aria-label^="OP 4310 · Dobra."]');
-  await arrastar(page, dobra, -900);
+  await dobra.scrollIntoViewIfNeeded();
+  const [cx, dx] = [await corte.boundingBox(), await dobra.boundingBox()];
+  if (!cx || !dx) throw new Error("barras sem posição");
+  // Solta a Dobra logo depois do início do Corte (antes de ele terminar).
+  await arrastar(page, dobra, cx.x + 4 - dx.x);
   await expect(page.getByRole("alert").filter({ hasText: /Depende de "Corte"/ })).toBeVisible();
   await expect(page.getByText("Sugerida · aguardando aprovação")).toBeVisible(); // nada mudou
 });
