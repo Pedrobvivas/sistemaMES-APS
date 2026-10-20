@@ -59,6 +59,27 @@ jobs:
       - name: Build
         run: npm run build
 
+      # Sobe o servidor de produção uma vez e confere a tela de entrada.
+      # Se falhar, publica o fim do log como anotação de erro da execução.
+      - name: Subir o servidor e conferir
+        run: |
+          cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/
+          HOSTNAME=0.0.0.0 PORT=3000 node .next/standalone/server.js > servidor.log 2>&1 &
+          PID=$!
+          code=000
+          for i in $(seq 1 60); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/entrar || true)
+            [ "$code" != "000" ] && break
+            sleep 2
+          done
+          echo "GET /entrar -> $code"
+          kill $PID || true
+          if [ "$code" = "000" ] || [ "$code" -ge 404 ]; then
+            msg=$(tail -c 6000 servidor.log | sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g')
+            echo "::error title=Servidor respondeu $code::${msg}"
+            exit 1
+          fi
+
       - name: Instalar navegador dos testes
         run: npx playwright install --with-deps chromium
 
