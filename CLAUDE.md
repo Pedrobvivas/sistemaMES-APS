@@ -1,6 +1,6 @@
 # Instruções para o Claude Code
 
-Este é o projeto-base da Camargo TI para sistemas sob medida. Cada sistema de cliente é uma cópia dele.
+Protótipo de PCP/APS/MES da Camargo TI, criado a partir do projeto-base. Requisitos de negócio: documentos do projeto "Sistema MES + APS" no claude.ai; regra do sequenciador em `docs/sequenciamento.md`.
 
 ## Stack
 Next.js 15 (App Router, server components e server actions) · TypeScript estrito · Tailwind CSS 4 · PostgreSQL com Drizzle ORM · Better Auth (email/senha + plugin admin) · Docker.
@@ -10,7 +10,10 @@ Next.js 15 (App Router, server components e server actions) · TypeScript estrit
 - Nomes de domínio em português (`clientes`, `salvarCliente`, `EstadoCliente`); nomes técnicos de bibliotecas como estão.
 
 ## Padrões obrigatórios
-- **Permissão:** toda página e toda server action começa com `requireSession()` ou `requireAdmin()` (`src/lib/session.ts`). O middleware é só um filtro rápido, não é segurança.
+- **Permissão:** toda página e toda server action começa com `exigirPermissao("<permissão>")` (perfis em `src/lib/papeis.ts`; `requireAdmin()` para usuários). O middleware é só um filtro rápido, não é segurança.
+- **Domínio:** regras industriais ficam em `src/domain` (TypeScript puro, imports com extensão `.ts`, sem banco nem Next) e têm teste em `tests/domain`. Serviços com banco ficam em `src/server`.
+- **Datas:** instantes em `timestamptz` (`instante()` em `src/db/schema/comum.ts`); conversões de turno e fuso só por `src/domain/tempo.ts`.
+- **Produção:** eventos de execução são imutáveis e idempotentes; nunca apague histórico produtivo.
 - **Validação:** toda entrada é validada com `zod` dentro da server action, antes de tocar no banco.
 - **Banco:** tabelas em `src/db/schema/<nome>.ts`, exportadas em `src/db/schema/index.ts`. Depois de mudar o schema, rode `npm run db:generate` e inclua a migration gerada. Nunca edite migrations já aplicadas.
 - **Molde de cadastro:** siga `src/app/(app)/clientes` (page.tsx lista, form.tsx com `useActionState`, actions.ts com validar → permissão → gravar → `revalidatePath` → `redirect`).
@@ -21,10 +24,10 @@ Next.js 15 (App Router, server components e server actions) · TypeScript estrit
 - **Segredos:** nunca escreva senhas, tokens ou dados reais de clientes no código ou em arquivos versionados. Só em `.env`.
 
 ## Comandos
-- `npm run dev` · `npm run typecheck` · `npm run build`
+- `npm run dev` · `npm run typecheck` · `npm run build` · `npm test` (domínio) · `npm run test:e2e` (navegador)
 - `npm run db:up` (Postgres local) · `npm run db:generate` · `npm run db:studio`
 
 ## Antes de dar uma tarefa como pronta
-1. `npm run typecheck` sem erros.
+1. `npm test` e `npm run typecheck` sem erros.
 2. `npm run build` sem erros.
 3. Se mudou o schema, a migration nova está em `drizzle/`.

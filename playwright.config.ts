@@ -8,7 +8,8 @@ export default defineConfig({
   workers: 1,
   timeout: 90_000,
   expect: { timeout: 15_000 },
-  reporter: [["list"], ["html", { open: "never" }]],
+  // No CI, "github" transforma cada falha em anotação legível na própria execução.
+  reporter: process.env.CI ? [["list"], ["github"], ["html", { open: "never" }]] : [["list"], ["html", { open: "never" }]],
   use: {
     baseURL: "http://localhost:3000",
     locale: "pt-BR",
