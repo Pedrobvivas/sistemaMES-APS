@@ -41,28 +41,15 @@ jobs:
       - name: Testes do domínio (sequenciador, arraste, MES)
         run: npm test
 
-      - name: Gerar migration se ainda não existir
+      # A migration versionada precisa refletir o schema: gerar não pode criar nada novo.
+      - name: Conferir migration em dia com o schema
         run: |
-          if [ ! -f drizzle/meta/_journal.json ]; then npm run db:generate; fi
-
-      # Enquanto a migration não estiver no repositório, imprime a pasta drizzle/ gerada
-      # (tar.gz em base64, pedaços de 4 KB) como anotações, para ser versionada.
-      - name: Exportar migration gerada
-        run: |
-          if git ls-files --error-unmatch drizzle/meta/_journal.json >/dev/null 2>&1; then exit 0; fi
-          tar czf /tmp/gerados.tgz drizzle
-          base64 -w0 /tmp/gerados.tgz > /tmp/gerados.b64
-          wc -c /tmp/gerados.b64
-          split -b 4000 -d -a 2 /tmp/gerados.b64 /tmp/parte-
-          for f in /tmp/parte-*; do echo "::notice title=migration $(basename "$f")::$(cat "$f")"; done
-
-      - name: Guardar migration e package-lock gerados
-        uses: actions/upload-artifact@v4
-        with:
-          name: gerados
-          path: |
-            drizzle/
-            package-lock.json
+          npm run db:generate
+          if [ -n "$(git status --porcelain drizzle)" ]; then
+            git status --porcelain drizzle
+            echo "::error title=Migration desatualizada::Rode npm run db:generate e inclua a migration no commit."
+            exit 1
+          fi
 
       - name: Checagem de tipos
         run: npm run typecheck
