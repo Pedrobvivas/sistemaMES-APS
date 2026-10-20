@@ -41,7 +41,7 @@ test("configuração inicial e carga da demonstração", async ({ page }) => {
   await page.goto("/sistema");
   page.on("dialog", (d) => d.accept());
   await page.getByRole("button", { name: "Carregar demonstração" }).click();
-  await expect(page.getByText("Dados de demonstração carregados")).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByText("Dados de demonstração carregados e programação aprovada")).toBeVisible({ timeout: 60_000 });
   await expect(page.getByText("Demonstração · dados fictícios")).toBeVisible();
 });
 
