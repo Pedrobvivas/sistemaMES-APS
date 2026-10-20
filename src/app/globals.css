@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+/*
+  Design system Camargo TI.
+  Para um cliente com marca própria, troque só os valores em :root e
+  [data-theme="light"]; todo o sistema acompanha.
+*/
+
+/* Tema escuro (padrão da marca) */
+:root {
+  --azul-royal: #2635cb;
+  --azul-profundo: #0c1884;
+  --azul-eletrico: #0066f0;
+  --violeta: #6030f0;
+  --lavanda: #a0b0f0;
+
+  --surface: #0c1014;
+  --surface-2: #151a24;
+  --borda: #262c3a;
+  --ink: #f2f4fc;
+  --muted: #a3a9bf;
+  --destaque-texto: #a0b0f0;
+  --sucesso: #4ade80;
+  --erro: #f87171;
+
+  --primaria: var(--azul-royal);
+  --primaria-hover: var(--azul-profundo);
+  --primaria-texto: #ffffff;
+
+  color-scheme: dark;
+}
+
+/* Tema claro (propostas, documentos, clientes que preferem claro) */
+[data-theme="light"] {
+  --surface: #ffffff;
+  --surface-2: #f4f5fb;
+  --borda: #e0e3ef;
+  --ink: #0c1014;
+  --muted: #565c72;
+  --destaque-texto: #2635cb;
+  --sucesso: #15803d;
+  --erro: #dc2626;
+
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-azul-royal: var(--azul-royal);
+  --color-azul-profundo: var(--azul-profundo);
+  --color-azul-eletrico: var(--azul-eletrico);
+  --color-violeta: var(--violeta);
+  --color-lavanda: var(--lavanda);
+
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-borda: var(--borda);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-destaque: var(--destaque-texto);
+  --color-sucesso: var(--sucesso);
+  --color-erro: var(--erro);
+  --color-primaria: var(--primaria);
+  --color-primaria-hover: var(--primaria-hover);
+  --color-primaria-texto: var(--primaria-texto);
+
+  --font-display: "Montserrat Variable", system-ui, sans-serif;
+  --font-sans: "Inter Variable", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+
+  --radius-sm: 6px;
+  --radius-md: 12px;
+}
+
+@layer base {
+  html {
+    background: var(--surface);
+    color: var(--ink);
+  }
+  body {
+    @apply bg-surface text-ink font-sans antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-display;
+  }
+  :focus-visible {
+    outline: 2px solid var(--azul-eletrico);
+    outline-offset: 2px;
+  }
+}
