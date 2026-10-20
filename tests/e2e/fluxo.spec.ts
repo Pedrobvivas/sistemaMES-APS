@@ -109,6 +109,44 @@ test("Gantt: painel de detalhes explica a posição e a versão é aprovada", as
   await expect(page.getByText("Aprovada · em vigor")).toBeVisible({ timeout: 30_000 });
 });
 
+test("OP criada pode ser reaberta pela lista, antes e depois de liberar", async () => {
+  await abrir(page, "/ordens/nova");
+  await page.getByLabel("Código da OP").fill("9001");
+  await page.getByLabel("Produto").selectOption({ index: 0 });
+  await page.getByLabel("Quantidade").fill("2");
+  await page.getByLabel("Data de entrega").fill("2026-12-15");
+  await page.getByRole("button", { name: "Criar OP" }).click();
+  await expect(page).toHaveURL(/\/ordens\/[0-9a-f-]{36}/);
+  await expect(page.getByRole("heading", { name: "OP 9001" })).toBeVisible();
+  const urlDaOp = page.url().split("?")[0];
+
+  // Sai da tela e volta pela lista.
+  await abrir(page, "/painel");
+  await abrir(page, "/ordens");
+  await page.getByRole("link", { name: "9001", exact: true }).click();
+  await expect(page).toHaveURL(new RegExp(urlDaOp.replace(/^.*\/ordens/, "/ordens") + "$"));
+  await expect(page.getByRole("heading", { name: "OP 9001" })).toBeVisible();
+  await expect(page.getByText("Não conseguimos carregar esta página")).toHaveCount(0);
+
+  // Abrindo direto pelo endereço.
+  await page.goto(urlDaOp);
+  await expect(page.getByRole("heading", { name: "OP 9001" })).toBeVisible();
+
+  // Depois de liberar, sair e voltar.
+  await page.getByRole("button", { name: "Liberar para produção" }).click();
+  await expect(page.getByText("OP liberada")).toBeVisible();
+  await abrir(page, "/ordens?q=9001");
+  await page.getByRole("link", { name: "9001", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "OP 9001" })).toBeVisible();
+  await expect(page.getByText("Não conseguimos carregar esta página")).toHaveCount(0);
+
+  // OP da demonstração (já em execução, com apontamentos) também abre.
+  await abrir(page, "/ordens?q=4301");
+  await page.getByRole("link", { name: "4301", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "OP 4301" })).toBeVisible();
+  await expect(page.getByText("Não conseguimos carregar esta página")).toHaveCount(0);
+});
+
 test("terminal: iniciar, pausar com motivo, retomar e finalizar", async () => {
   await abrir(page, "/terminal");
   // Na demonstração, a Dobra da OP 4303 está liberada (o Corte já foi concluído).

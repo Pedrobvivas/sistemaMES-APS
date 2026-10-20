@@ -82,7 +82,19 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Testes de ponta a ponta
-        run: npx playwright test
+        run: |
+          HOSTNAME=0.0.0.0 PORT=3000 node .next/standalone/server.js > servidor-e2e.log 2>&1 &
+          for i in $(seq 1 60); do curl -s -o /dev/null http://localhost:3000/entrar && break; sleep 2; done
+          E2E_SERVIDOR_EXTERNO=1 npx playwright test
+
+      # Se algum teste falhar, os erros do servidor aparecem como anotação da execução.
+      - name: Erros do servidor durante os testes
+        if: failure()
+        run: |
+          erros=$(grep -n -A 25 -E "⨯|Error|error" servidor-e2e.log | head -c 8000 || true)
+          [ -z "$erros" ] && erros=$(tail -c 4000 servidor-e2e.log)
+          msg=$(printf "%s" "$erros" | sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g')
+          echo "::error title=Log do servidor (e2e)::${msg}"
 
       - name: Relatório e capturas
         if: always()
