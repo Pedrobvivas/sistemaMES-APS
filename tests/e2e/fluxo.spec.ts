@@ -111,10 +111,10 @@ test("Gantt: painel de detalhes explica a posição e a versão é aprovada", as
 
 test("terminal: iniciar, pausar com motivo, retomar e finalizar", async () => {
   await abrir(page, "/terminal");
-  await page.getByRole("link", { name: /Bancada de testes|Puncionadeira CNC/ }).first().click();
+  // Na demonstração, a Dobra da OP 4303 está liberada (o Corte já foi concluído).
+  await page.getByRole("link", { name: /Dobradeira/ }).click();
   await page.getByLabel("Operador").selectOption({ label: "1001 · Bruno Lima" });
   const iniciar = page.getByRole("button", { name: /^Iniciar OP/ }).and(page.locator(":not([disabled])")).first();
-  if ((await iniciar.count()) === 0) test.skip(true, "Nenhuma operação liberada para iniciar neste recurso agora.");
   await iniciar.click();
   await expect(page.getByText(/Início registrado/)).toBeVisible();
   await page.getByRole("button", { name: "Pausar" }).click();

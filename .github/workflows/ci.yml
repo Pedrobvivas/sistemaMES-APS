@@ -45,6 +45,16 @@ jobs:
         run: |
           if [ ! -f drizzle/meta/_journal.json ]; then npm run db:generate; fi
 
+      # Enquanto migration e package-lock não estiverem no repositório, imprime os
+      # arquivos gerados (tar.gz em base64) como anotações, para serem versionados.
+      - name: Exportar arquivos gerados
+        run: |
+          if git ls-files --error-unmatch drizzle/meta/_journal.json package-lock.json >/dev/null 2>&1; then exit 0; fi
+          tar czf /tmp/gerados.tgz drizzle package-lock.json
+          base64 -w0 /tmp/gerados.tgz > /tmp/gerados.b64
+          split -b 50000 -d /tmp/gerados.b64 /tmp/parte-
+          for f in /tmp/parte-*; do echo "::notice title=gerados $(basename "$f")::$(cat "$f")"; done
+
       - name: Guardar migration e package-lock gerados
         uses: actions/upload-artifact@v4
         with:
