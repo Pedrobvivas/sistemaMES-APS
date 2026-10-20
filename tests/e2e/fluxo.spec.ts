@@ -12,6 +12,14 @@ async function entrar(page: Page, email: string, senha: string) {
   await page.getByLabel("E-mail").fill(email);
   await page.getByLabel("Senha").fill(senha);
   await page.getByRole("button", { name: "Entrar" }).click();
+  await page.waitForURL((u) => !u.pathname.startsWith("/entrar"));
+}
+
+// Abre uma tela e confere que não houve redirecionamento nem erro.
+async function abrir(page: Page, caminho: string) {
+  await page.goto(caminho);
+  await expect(page).toHaveURL(new RegExp(caminho.replace(/[?]/g, "\\?")));
+  await expect(page.getByText("Não conseguimos carregar esta página")).toHaveCount(0);
 }
 
 // Arrasta uma barra do Gantt horizontalmente (e opcionalmente na vertical).
@@ -38,7 +46,7 @@ test("configuração inicial e carga da demonstração", async ({ page }) => {
   await entrar(page, ADMIN.email, ADMIN.senha);
   await expect(page).toHaveURL(/\/painel/);
 
-  await page.goto("/sistema");
+  await abrir(page, "/sistema");
   page.on("dialog", (d) => d.accept());
   await page.getByRole("button", { name: "Carregar demonstração" }).click();
   await expect(page.getByText("Dados de demonstração carregados e programação aprovada")).toBeVisible({ timeout: 60_000 });
@@ -47,7 +55,7 @@ test("configuração inicial e carga da demonstração", async ({ page }) => {
 
 test("Gantt: arrastar a OP gera versão sugerida com antes × depois e data fixada", async ({ page }) => {
   await entrar(page, ADMIN.email, ADMIN.senha);
-  await page.goto("/programacao");
+  await abrir(page, "/programacao");
   await expect(page.getByText("Aprovada · em vigor")).toBeVisible();
   await page.screenshot({ path: "test-results/01-gantt-aprovado.png", fullPage: true });
 
@@ -66,7 +74,7 @@ test("Gantt: arrastar a OP gera versão sugerida com antes × depois e data fixa
 
 test("Gantt: só a operação, antes da anterior, é recusado com explicação", async ({ page }) => {
   await entrar(page, ADMIN.email, ADMIN.senha);
-  await page.goto("/programacao");
+  await abrir(page, "/programacao");
   await page.getByText("Só a operação", { exact: true }).click();
   const dobra = page.locator('button[aria-label^="OP 4310 · Dobra."]');
   await arrastar(page, dobra, -900);
@@ -76,7 +84,7 @@ test("Gantt: só a operação, antes da anterior, é recusado com explicação",
 
 test("Gantt: painel de detalhes explica a posição e a versão é aprovada", async ({ page }) => {
   await entrar(page, ADMIN.email, ADMIN.senha);
-  await page.goto("/programacao");
+  await abrir(page, "/programacao");
   await page.locator('button[aria-label^="OP 4306 · Corte."]').click();
   await expect(page.getByRole("heading", { name: "OP 4306 · Corte" })).toBeVisible();
   await expect(page.getByText("Por que está aqui")).toBeVisible();
@@ -86,7 +94,7 @@ test("Gantt: painel de detalhes explica a posição e a versão é aprovada", as
 
 test("terminal: iniciar, pausar com motivo, retomar e finalizar", async ({ page }) => {
   await entrar(page, ADMIN.email, ADMIN.senha);
-  await page.goto("/terminal");
+  await abrir(page, "/terminal");
   await page.getByRole("link", { name: /Bancada de testes|Puncionadeira CNC/ }).first().click();
   await page.getByLabel("Operador").selectOption({ label: "1001 · Bruno Lima" });
   const iniciar = page.getByRole("button", { name: /^Iniciar OP/ }).and(page.locator(":not([disabled])")).first();
@@ -107,7 +115,7 @@ test("terminal: iniciar, pausar com motivo, retomar e finalizar", async ({ page 
 
 test("painel abre com indicadores e Pareto", async ({ page }) => {
   await entrar(page, ADMIN.email, ADMIN.senha);
-  await page.goto("/painel");
+  await abrir(page, "/painel");
   await expect(page.getByRole("heading", { name: "OPs que pedem atenção" })).toBeVisible();
   await expect(page.getByRole("heading", { name: /Paradas dos últimos/ })).toBeVisible();
   await expect(page.getByText("Falta de material").first()).toBeVisible();
@@ -116,7 +124,7 @@ test("painel abre com indicadores e Pareto", async ({ page }) => {
 
 test("perfil operador só acessa o terminal", async ({ page }) => {
   await entrar(page, ADMIN.email, ADMIN.senha);
-  await page.goto("/usuarios");
+  await abrir(page, "/usuarios");
   await page.getByLabel("Nome", { exact: true }).fill(OPERADOR.nome);
   await page.getByLabel("E-mail").fill(OPERADOR.email);
   await page.getByLabel("Senha inicial").fill(OPERADOR.senha);
