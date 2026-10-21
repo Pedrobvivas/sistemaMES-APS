@@ -5,12 +5,13 @@ import type { Permissao } from "@/lib/papeis";
 export type ItemMenu = {
   href: string;
   rotulo: string;
-  icone: "painel" | "ordens" | "programacao" | "terminal" | "cadastros" | "clientes" | "usuarios" | "sistema";
+  icone: "visao" | "painel" | "ordens" | "programacao" | "terminal" | "cadastros" | "clientes" | "usuarios" | "sistema";
   permissao?: Permissao;
 };
 
 export const itensMenu: ItemMenu[] = [
-  { href: "/painel", rotulo: "Painel", icone: "painel", permissao: "painel:ver" },
+  { href: "/visao-geral", rotulo: "Visão geral", icone: "visao", permissao: "painel:ver" },
+  { href: "/painel", rotulo: "Painel do dia", icone: "painel", permissao: "painel:ver" },
   { href: "/ordens", rotulo: "Ordens de produção", icone: "ordens", permissao: "ordens:editar" },
   { href: "/programacao", rotulo: "Programação (Gantt)", icone: "programacao", permissao: "programacao:editar" },
   { href: "/terminal", rotulo: "Terminal de produção", icone: "terminal", permissao: "execucao:apontar" },

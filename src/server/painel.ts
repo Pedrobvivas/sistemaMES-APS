@@ -65,47 +65,7 @@ export async function carregarPainel() {
     .from(apontamentos)
     .where(and(gte(apontamentos.ocorridoEm, new Date(inicioHoje)), lte(apontamentos.ocorridoEm, new Date(fimHoje))));
 
-  // Pareto de paradas: trechos pausa → retomada dos últimos dias, recortados na janela.
-  const comPausa = await db
-    .selectDistinct({ id: eventosExecucao.operacaoId })
-    .from(eventosExecucao)
-    .where(and(eq(eventosExecucao.tipo, "pausa"), gte(eventosExecucao.ocorridoEm, new Date(inicioPareto - 30 * DIA))));
-  const eventos = comPausa.length
-    ? await db
-        .select({ operacaoId: eventosExecucao.operacaoId, tipo: eventosExecucao.tipo, ocorridoEm: eventosExecucao.ocorridoEm, motivoParadaId: eventosExecucao.motivoParadaId })
-        .from(eventosExecucao)
-        .where(inArray(eventosExecucao.operacaoId, comPausa.map((c) => c.id)))
-    : [];
-  const motivos = new Map((await db.select().from(motivosParada)).map((m) => [m.id, m]));
-  const porMotivo = new Map<string, number>();
-  for (const opId of new Set(eventos.map((e) => e.operacaoId))) {
-    const trechos = trechosDeParada(
-      eventos.filter((e) => e.operacaoId === opId).map((e) => ({ tipo: e.tipo as TipoEvento, ocorridoEm: e.ocorridoEm.getTime(), motivoParadaId: e.motivoParadaId })),
-      agora,
-    );
-    for (const t of trechos) {
-      const de = Math.max(t.inicio, inicioPareto);
-      const ate = Math.min(t.fim, agora);
-      if (ate <= de) continue;
-      const chave = t.motivoParadaId ?? "sem-motivo";
-      porMotivo.set(chave, (porMotivo.get(chave) ?? 0) + (ate - de) / MINUTO);
-    }
-  }
-  const totalParadas = [...porMotivo.values()].reduce((s, v) => s + v, 0);
-  let acumulado = 0;
-  const pareto = [...porMotivo.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .map(([id, minutos]) => {
-      acumulado += minutos;
-      const m = motivos.get(id);
-      return {
-        motivo: m?.nome ?? "Sem motivo",
-        categoria: m?.categoria ?? "nao_planejada",
-        minutos: Math.round(minutos),
-        percentual: totalParadas ? minutos / totalParadas : 0,
-        acumulado: totalParadas ? acumulado / totalParadas : 0,
-      };
-    });
+  const { pareto, totalMin: totalParadas } = await paradasPorMotivo(inicioPareto, agora);
 
   return {
     agora,
@@ -120,7 +80,57 @@ export async function carregarPainel() {
       quantidadeRejeitada: Number(quantidadesHoje.rejeitada ?? 0),
     },
     pareto,
-    totalParadasMin: Math.round(totalParadas),
+    totalParadasMin: totalParadas,
     recursos: recursosAgora,
   };
+}
+
+// Paradas por motivo numa janela: trechos "Pausar → Retomar/Finalizar" apontados no terminal,
+// recortados na janela (uma parada ainda aberta conta até o fim da janela).
+// Usado pelo Painel e pela Visão geral, para os dois seguirem o mesmo critério.
+export async function paradasPorMotivo(de: number, ate: number) {
+  const comPausa = await db
+    .selectDistinct({ id: eventosExecucao.operacaoId })
+    .from(eventosExecucao)
+    .where(and(eq(eventosExecucao.tipo, "pausa"), gte(eventosExecucao.ocorridoEm, new Date(de - 30 * DIA)), lte(eventosExecucao.ocorridoEm, new Date(ate))));
+  const eventos = comPausa.length
+    ? await db
+        .select({ operacaoId: eventosExecucao.operacaoId, tipo: eventosExecucao.tipo, ocorridoEm: eventosExecucao.ocorridoEm, motivoParadaId: eventosExecucao.motivoParadaId })
+        .from(eventosExecucao)
+        .where(inArray(eventosExecucao.operacaoId, comPausa.map((c) => c.id)))
+    : [];
+  const motivos = new Map((await db.select().from(motivosParada)).map((m) => [m.id, m]));
+  const porMotivo = new Map<string, number>();
+  for (const opId of new Set(eventos.map((e) => e.operacaoId))) {
+    const trechos = trechosDeParada(
+      eventos
+        .filter((e) => e.operacaoId === opId)
+        .map((e) => ({ tipo: e.tipo as TipoEvento, ocorridoEm: e.ocorridoEm.getTime(), motivoParadaId: e.motivoParadaId })),
+      ate,
+    );
+    for (const t of trechos) {
+      const ini = Math.max(t.inicio, de);
+      const fim = Math.min(t.fim, ate);
+      if (fim <= ini) continue;
+      const chave = t.motivoParadaId ?? "sem-motivo";
+      porMotivo.set(chave, (porMotivo.get(chave) ?? 0) + (fim - ini) / MINUTO);
+    }
+  }
+  const total = [...porMotivo.values()].reduce((s, v) => s + v, 0);
+  let acumulado = 0;
+  const pareto = [...porMotivo.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([id, minutos]) => {
+      acumulado += minutos;
+      const m = motivos.get(id);
+      return {
+        motivo: m?.nome ?? "Sem motivo",
+        categoria: m?.categoria ?? "nao_planejada",
+        minutos: Math.round(minutos),
+        percentual: total ? minutos / total : 0,
+        acumulado: total ? acumulado / total : 0,
+      };
+    });
+  const naoPlanejadaMin = pareto.filter((p) => p.categoria === "nao_planejada").reduce((s, p) => s + p.minutos, 0);
+  return { pareto, totalMin: Math.round(total), naoPlanejadaMin };
 }

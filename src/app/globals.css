@@ -27,6 +27,11 @@
   --barra: #2f3fd6;
   --barra-texto: #ffffff;
   --fora-turno: #10141b;
+  /* Destaque da marca e séries de gráfico (validadas para contraste e daltonismo) */
+  --rosa: #ec4899;
+  --violeta-claro: #8b6cf6;
+  --serie-1: #8b6cf6;
+  --serie-2: #ec4899;
 
   --primaria: var(--azul-royal);
   --primaria-hover: var(--azul-profundo);
@@ -49,6 +54,10 @@
   --barra: #2635cb;
   --barra-texto: #ffffff;
   --fora-turno: #e9ebf4;
+  --rosa: #d0307e;
+  --violeta-claro: #6030f0;
+  --serie-1: #6030f0;
+  --serie-2: #d0307e;
 
   color-scheme: light;
 }
@@ -72,6 +81,10 @@
   --color-barra: var(--barra);
   --color-barra-texto: var(--barra-texto);
   --color-fora-turno: var(--fora-turno);
+  --color-rosa: var(--rosa);
+  --color-violeta-claro: var(--violeta-claro);
+  --color-serie-1: var(--serie-1);
+  --color-serie-2: var(--serie-2);
   --color-primaria: var(--primaria);
   --color-primaria-hover: var(--primaria-hover);
   --color-primaria-texto: var(--primaria-texto);
@@ -100,5 +113,24 @@
   :focus-visible {
     outline: 2px solid var(--azul-eletrico);
     outline-offset: 2px;
+  }
+}
+
+/* Degradê da marca (violeta → rosa), para destaques da Visão geral. */
+@layer components {
+  .degrade-marca {
+    background-image: linear-gradient(120deg, var(--violeta) 0%, var(--violeta-claro) 45%, var(--rosa) 100%);
+  }
+  .texto-degrade {
+    background-image: linear-gradient(90deg, var(--violeta-claro), var(--rosa));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .borda-degrade {
+    border: 1px solid transparent;
+    background:
+      linear-gradient(var(--surface-2), var(--surface-2)) padding-box,
+      linear-gradient(120deg, color-mix(in srgb, var(--violeta-claro) 70%, transparent), color-mix(in srgb, var(--rosa) 70%, transparent)) border-box;
   }
 }

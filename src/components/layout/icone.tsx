@@ -15,6 +15,13 @@ const caminhos: Record<string, React.ReactNode> = {
       <path d="M16 4a4 4 0 0 1 0 8M22 21a7 7 0 0 0-4-6.3" />
     </>
   ),
+  visao: (
+    <>
+      <path d="M3 3v18h18" />
+      <path d="m7 15 4-4 3 3 5-6" />
+      <circle cx="19" cy="8" r="1.5" />
+    </>
+  ),
   ordens: (
     <>
       <rect x="5" y="4" width="14" height="17" rx="2" />

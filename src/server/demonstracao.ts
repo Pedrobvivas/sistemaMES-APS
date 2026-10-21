@@ -332,7 +332,7 @@ export async function carregarDemonstracao(usuarioId: string): Promise<Resultado
       )
       .returning();
     await tx.insert(configuracoes).values({ chave: CHAVE, valor: { carregadoEm: new Date().toISOString(), clientes: cl } });
-    return { ordens: criadas, r, m, operadores: ops };
+    return { ordens: criadas, r, m, operadores: ops, produtos: p, clientes: cl };
   });
 
   for (const o of ids.ordens) {
@@ -405,6 +405,8 @@ export async function carregarDemonstracao(usuarioId: string): Promise<Resultado
     }
   });
 
+  await gerarHistorico(usuarioId, { ...ids, hoje: ontem });
+
   const gerada = await gerarProgramacao(usuarioId);
   if (!gerada.ok) return gerada;
   const aprovada = await aprovar(gerada.programacaoId, usuarioId);
@@ -413,3 +415,129 @@ export async function carregarDemonstracao(usuarioId: string): Promise<Resultado
   return { ok: true };
 }
 
+
+// Gerador pseudoaleatório com semente: o histórico sai igual a cada carga.
+function sorteador(semente: number) {
+  let a = semente >>> 0;
+  const proximo = () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  return {
+    numero: proximo,
+    inteiro: (min: number, max: number) => min + Math.floor(proximo() * (max - min + 1)),
+    item: <T,>(lista: T[]) => lista[Math.floor(proximo() * lista.length)],
+  };
+}
+
+// Histórico fictício de ~60 dias de OPs concluídas, para a Visão geral ter tendência,
+// comparação entre períodos, entregas no prazo/atrasadas, rejeições e paradas.
+async function gerarHistorico(
+  usuarioId: string,
+  base: {
+    hoje: string; // último dia útil com histórico
+    produtos: Record<string, string>;
+    clientes: string[];
+    operadores: { id: string }[];
+    m: Record<string, string>;
+  },
+) {
+  const s = sorteador(20261021);
+  const membros = await db.select().from(grupoRecursoMembros);
+  const recursoDoGrupo = (grupoId: string) => {
+    const lista = membros.filter((x) => x.grupoId === grupoId);
+    return s.item(lista).recursoId;
+  };
+  const qtd: Record<string, [number, number]> = { "QDC-24": [1, 4], "SB-8": [4, 12], "CCM-6": [1, 2], "CAB-MED": [1, 1] };
+  const mix = ["QDC-24", "SB-8", "QDC-24", "CCM-6", "SB-8", "CAB-MED", "QDC-24", "SB-8"];
+  const motivos = ["FALTA-MAT", "FALTA-MAT", "FALTA-MAT", "AJUSTE-PROJ", "AJUSTE-PROJ", "MANUT-CORR", "RETRABALHO", "DDS"];
+
+  // Dias úteis de trás para frente (~60 dias corridos).
+  const dias: string[] = [];
+  let d = base.hoje;
+  while (dias.length < 42) {
+    dias.push(d);
+    d = diaUtilAnterior(d);
+  }
+  dias.reverse();
+
+  let codigo = 4101;
+  for (const [indice, diaFim] of dias.entries()) {
+    // Ritmo maior nas semanas recentes (tendência de alta).
+    const quantas = s.numero() < (indice < 21 ? 0.35 : 0.65) ? 2 : 1;
+    for (let k = 0; k < quantas; k++) {
+      const produto = s.item(mix);
+      const quantidade = s.inteiro(...qtd[produto]);
+      const noPrazo = s.numero() < 0.8;
+      const prazo = noPrazo ? diaUtil(diaFim, s.inteiro(0, 3)) : diaUtilAnterior(s.numero() < 0.5 ? diaFim : diaUtilAnterior(diaFim));
+      const [ordem] = await db
+        .insert(ordensProducao)
+        .values({
+          codigo: String(codigo++),
+          produtoId: base.produtos[produto],
+          quantidade,
+          prioridade: s.numero() < 0.15 ? 1 : 2,
+          prazoEntrega: prazo,
+          clienteId: s.item(base.clientes),
+          pedidoVenda: `PV-${codigo + 1100}`,
+          criadoPor: usuarioId,
+        })
+        .returning();
+      const lib = await liberarOrdem(ordem.id, usuarioId);
+      if (!lib.ok) continue;
+
+      await db.transaction(async (tx) => {
+        const ops = (await tx.select().from(operacoesOrdem).where(eq(operacoesOrdem.ordemId, ordem.id))).sort((a, b) => a.sequencia - b.sequencia);
+        const ultimaSeq = Math.max(...ops.map((o) => o.sequencia));
+        const eventos: (typeof eventosExecucao.$inferInsert)[] = [];
+        const pontos: (typeof apontamentos.$inferInsert)[] = [];
+        let fimOrdem = new Date(0);
+        for (const [i, op] of ops.entries()) {
+          const voltaDias = Math.floor((ops.length - 1 - i) / 2);
+          let dia = diaFim;
+          for (let v = 0; v < voltaDias; v++) dia = diaUtilAnterior(dia);
+          const manha = (ops.length - 1 - i) % 2 === 1;
+          const inicio = new Date(hora(dia, manha ? 7 : 13, s.inteiro(0, 40)).getTime());
+          let fim = new Date(inicio.getTime() + s.inteiro(50, 180) * 60_000);
+          const recursoId = recursoDoGrupo(op.grupoRecursoId);
+          const operadorId = s.item(base.operadores).id;
+          const ev = (tipo: "inicio" | "pausa" | "retomada" | "fim", quando: Date, motivo: string | null = null) => {
+            const id = crypto.randomUUID();
+            eventos.push({ id, operacaoId: op.id, recursoId, operadorId, tipo, motivoParadaId: motivo, ocorridoEm: quando, usuarioId, chaveIdempotencia: `demo-hist-${id}` });
+            return id;
+          };
+          ev("inicio", inicio);
+          if (s.numero() < 0.3) {
+            const pausa = new Date(inicio.getTime() + s.inteiro(15, 40) * 60_000);
+            const duracao = s.inteiro(10, 70) * 60_000;
+            ev("pausa", pausa, base.m[s.item(motivos)]);
+            ev("retomada", new Date(pausa.getTime() + duracao));
+            fim = new Date(fim.getTime() + duracao);
+          }
+          const idFim = ev("fim", fim);
+          const ultima = op.sequencia === ultimaSeq;
+          pontos.push({
+            operacaoId: op.id,
+            eventoId: idFim,
+            operadorId,
+            quantidadeBoa: quantidade,
+            quantidadeRejeitada: ultima && s.numero() < 0.18 ? s.inteiro(1, Math.max(1, Math.ceil(quantidade / 4))) : 0,
+            ocorridoEm: fim,
+          });
+          await tx.update(operacoesOrdem).set({ status: "concluida", recursoExecucaoId: recursoId, inicioReal: inicio, fimReal: fim }).where(eq(operacoesOrdem.id, op.id));
+          if (fim > fimOrdem) fimOrdem = fim;
+        }
+        await tx.insert(eventosExecucao).values(eventos);
+        await tx.insert(apontamentos).values(pontos);
+        await tx.update(ordensProducao).set({ status: "concluida" }).where(eq(ordensProducao.id, ordem.id));
+        await tx.insert(ordemHistorico).values([
+          { ordemId: ordem.id, de: "liberada", para: "em_execucao", usuarioId, motivo: "Apontamento de produção (demonstração)" },
+          { ordemId: ordem.id, de: "em_execucao", para: "concluida", usuarioId, motivo: "Apontamento de produção (demonstração)" },
+        ]);
+      });
+    }
+  }
+}

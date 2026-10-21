@@ -60,7 +60,7 @@ test("configuração inicial e carga da demonstração", async () => {
   await expect(page).toHaveURL(/\/entrar/);
 
   await entrar(page, ADMIN.email, ADMIN.senha);
-  await expect(page).toHaveURL(/\/painel/);
+  await expect(page).toHaveURL(/\/visao-geral/);
 
   await abrir(page, "/sistema");
   await page.getByRole("button", { name: "Carregar demonstração" }).click();
@@ -107,6 +107,33 @@ test("Gantt: painel de detalhes explica a posição e a versão é aprovada", as
   await expect(page.getByText("Por que está aqui")).toBeVisible();
   await page.getByRole("button", { name: "Aprovar programação" }).click();
   await expect(page.getByText("Aprovada · em vigor")).toBeVisible({ timeout: 30_000 });
+});
+
+test("visão geral abre com indicadores, gráfico e listas", async () => {
+  await abrir(page, "/visao-geral");
+  await expect(page.getByRole("heading", { name: /Visão geral/ })).toBeVisible();
+  for (const rotulo of ["Entregas no prazo", "Produtos acabados", "Qualidade", "OPs concluídas", "OPs em carteira", "Carga programada", "Ocupação dos recursos", "Tempo parado"]) {
+    await expect(page.getByRole("heading", { name: new RegExp(rotulo) })).toBeVisible();
+  }
+  await expect(page.getByRole("heading", { name: /Produção diária/ })).toBeVisible();
+  // O histórico da demonstração gera barras no gráfico.
+  await expect(page.getByRole("button", { name: /boas, \d+ rejeitadas/ }).first()).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Ocupação por centro" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "OPs em risco" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Principais paradas" })).toBeVisible();
+  await expect(page.getByText("Falta de material").first()).toBeVisible();
+  // Nenhum indicador principal vazio com a demonstração carregada.
+  await expect(page.locator("article").filter({ hasText: "Entregas no prazo" }).getByText("%").first()).toBeVisible();
+
+  await page.getByRole("button", { name: /boas, \d+ rejeitadas/ }).nth(25).hover();
+  await page.screenshot({ path: "test-results/capturas/visao-geral-1.jpg", type: "jpeg", quality: 45 });
+  await page.mouse.wheel(0, 700);
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: "test-results/capturas/visao-geral-2.jpg", type: "jpeg", quality: 45 });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/visao-geral");
+  await page.screenshot({ path: "test-results/capturas/visao-geral-celular.jpg", type: "jpeg", quality: 40 });
+  await page.setViewportSize({ width: 1440, height: 900 });
 });
 
 test("OP criada pode ser reaberta pela lista, antes e depois de liberar", async () => {

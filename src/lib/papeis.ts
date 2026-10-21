@@ -39,5 +39,5 @@ export function pode(papel: string | null | undefined, permissao: Permissao) {
 
 // Tela inicial de cada perfil.
 export function inicioDoPapel(papel: string | null | undefined) {
-  return normalizarPapel(papel) === "operador" ? "/terminal" : "/painel";
+  return normalizarPapel(papel) === "operador" ? "/terminal" : "/visao-geral";
 }

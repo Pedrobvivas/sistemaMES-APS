@@ -96,6 +96,22 @@ jobs:
           msg=$(printf "%s" "$erros" | sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g')
           echo "::error title=Log do servidor (e2e)::${msg}"
 
+      - name: Capturas em texto (1/4)
+        if: always() && contains(github.event.head_commit.message, '[capturas]')
+        run: sh .github/capturas.sh 0
+
+      - name: Capturas em texto (2/4)
+        if: always() && contains(github.event.head_commit.message, '[capturas]')
+        run: sh .github/capturas.sh 10
+
+      - name: Capturas em texto (3/4)
+        if: always() && contains(github.event.head_commit.message, '[capturas]')
+        run: sh .github/capturas.sh 20
+
+      - name: Capturas em texto (4/4)
+        if: always() && contains(github.event.head_commit.message, '[capturas]')
+        run: sh .github/capturas.sh 30
+
       - name: Relatório e capturas
         if: always()
         uses: actions/upload-artifact@v4
