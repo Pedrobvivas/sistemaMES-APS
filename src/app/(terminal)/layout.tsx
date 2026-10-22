@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { BotaoSair } from "@/components/layout/acoes-usuario";
-import { Icone } from "@/components/layout/icone";
+import { Marca } from "@/components/layout/marca";
 import { SeloDemonstracao } from "@/components/ui/selo-demonstracao";
 import { pode } from "@/lib/papeis";
 import { exigirPermissao } from "@/lib/session";
@@ -16,7 +16,7 @@ export default async function TerminalLayout({ children }: { children: React.Rea
     <div data-theme="light" className="min-h-screen bg-surface text-ink">
       <header className="flex h-16 items-center gap-3 border-b border-borda bg-surface-2 px-4">
         <Link href="/terminal" className="flex items-center gap-2 font-display text-lg font-bold">
-          <Icone nome="terminal" /> Terminal de produção
+          <Marca tamanho={28} /> Terminal de produção
         </Link>
         <span className="hidden text-sm text-muted md:inline">{appName}</span>
         {demonstracao && <SeloDemonstracao />}

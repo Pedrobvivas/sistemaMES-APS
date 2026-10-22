@@ -1,5 +1,6 @@
 import { BotaoSair, BotaoTema } from "@/components/layout/acoes-usuario";
 import { Icone } from "@/components/layout/icone";
+import { Marca } from "@/components/layout/marca";
 import { itensMenu } from "@/components/layout/menu";
 import { Nav } from "@/components/layout/nav";
 import { SeloDemonstracao } from "@/components/ui/selo-demonstracao";
@@ -22,9 +23,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex min-h-screen">
       <aside className="hidden w-64 shrink-0 flex-col gap-8 border-r border-borda bg-surface-2 p-4 lg:flex">
-        <div className="px-3 pt-2">
-          <p className="font-display text-lg font-bold">{appName}</p>
-          <p className="text-xs text-muted">PCP · APS · MES — Camargo TI</p>
+        <div className="flex items-center gap-3 px-3 pt-2">
+          <Marca tamanho={36} />
+          <div className="min-w-0">
+            <p className="font-display text-lg font-bold leading-tight">{appName}</p>
+            <p className="text-xs text-muted">PCP · APS · MES</p>
+          </div>
         </div>
         <Nav itens={itens} />
       </aside>
@@ -42,7 +46,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               <Nav itens={itens} />
             </div>
           </details>
-          <p className="font-display font-bold lg:hidden">{appName}</p>
+          <p className="flex items-center gap-2 font-display font-bold lg:hidden">
+            <Marca tamanho={26} />
+            {appName}
+          </p>
           {demonstracao && <SeloDemonstracao />}
 
           <div className="ml-auto flex items-center gap-2">

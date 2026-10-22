@@ -61,7 +61,7 @@ export function FormCadastro({
         if (c.tipo === "caixa") {
           return (
             <div key={c.nome} className={cn("flex min-h-11 items-center gap-3", largura)}>
-              <input type="checkbox" {...comum} required={false} defaultChecked={!!c.valor} className="h-5 w-5 accent-[var(--azul-eletrico)]" />
+              <input type="checkbox" {...comum} required={false} defaultChecked={!!c.valor} className="h-5 w-5 accent-[var(--acento)]" />
               <label htmlFor={id} className="text-sm font-semibold">
                 {c.rotulo}
               </label>

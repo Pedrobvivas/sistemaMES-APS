@@ -507,11 +507,11 @@ export function Gantt({ dados, podeEditar }: { dados: DadosGantt; podeEditar: bo
                       <div key={`f-${l.id}`} className="absolute left-0 right-0 border-b border-borda bg-surface" style={{ top: l.topo, height: l.altura }}>
                         {l.prazoFim >= janela.inicio && l.prazoFim <= janela.fim && (
                           <div
-                            className="pointer-events-none absolute inset-y-0 border-l-2 border-dashed border-rosa"
+                            className="pointer-events-none absolute inset-y-0 border-l-2 border-dashed border-ink/70"
                             style={{ left: xDe(l.prazoFim) }}
                             title={`Entrega: ${formatarCurto(l.prazoFim, fuso).slice(0, 5)}`}
                           >
-                            <span className="absolute bottom-0.5 left-1 rounded-sm bg-rosa px-1 text-[10px] font-bold text-primaria-texto">entrega</span>
+                            <span className="absolute bottom-0.5 left-1 rounded-sm bg-ink px-1 text-[10px] font-bold text-surface">entrega</span>
                           </div>
                         )}
                       </div>
@@ -580,7 +580,7 @@ export function Gantt({ dados, podeEditar }: { dados: DadosGantt; podeEditar: bo
                           aria-hidden="true"
                           className={cn(
                             "pointer-events-none absolute z-20 flex items-center rounded-sm border-2 border-dashed px-2 text-xs font-semibold",
-                            arraste?.motivo && item.operacaoId === arraste.item.operacaoId ? "border-erro bg-erro/20 text-erro" : "border-azul-eletrico bg-primaria/30 text-ink",
+                            arraste?.motivo && item.operacaoId === arraste.item.operacaoId ? "border-erro bg-erro/20 text-erro" : "border-acento bg-primaria/30 text-ink",
                           )}
                           style={{
                             left: xDe(fantasma.inicio),
@@ -671,7 +671,8 @@ function Barra({
   onLeave: () => void;
 }) {
   const atrasada = item.atrasoMin > 0;
-  const cor = item.emExecucao ? "bg-sucesso text-surface" : item.fixada ? "bg-violeta text-primaria-texto" : "bg-barra text-barra-texto";
+  const cor = item.emExecucao ? "bg-barra-execucao" : item.fixada ? "bg-barra-fixada" : "bg-barra";
+  const corTexto = item.emExecucao ? "text-barra-execucao-texto" : item.fixada ? "text-barra-fixada-texto" : "text-barra-texto";
   const descricao = `OP ${item.ordemCodigo} · ${item.operacaoNome} · ${recursoNome}. ${formatarCurto(item.inicio, fuso)} → ${formatarCurto(item.fim, fuso)}.${
     item.fixada ? " Data fixada." : ""
   }${item.emExecucao ? " Em execução." : ""}${atrasada ? " OP com atraso previsto." : ""}`;
@@ -701,7 +702,7 @@ function Barra({
       {item.segmentos.map((s) => (
         <span key={s.inicio} className={cn("absolute inset-y-0", cor)} style={{ left: xDe(s.inicio) - x, width: Math.max(1, xDe(s.fim) - xDe(s.inicio)) }} />
       ))}
-      <span className={cn("relative flex h-full items-center gap-1 px-1.5 text-xs font-semibold", item.emExecucao ? "text-surface" : "text-primaria-texto")}>
+      <span className={cn("relative flex h-full items-center gap-1 px-1.5 text-xs font-semibold", corTexto)}>
         {item.fixada && <Icone nome="alfinete" tamanho={12} />}
         {item.emExecucao && <Icone nome="iniciar" tamanho={10} />}
         {atrasada && <Icone nome="alerta" tamanho={12} />}
@@ -740,8 +741,8 @@ function Escala({ dias, xDe, zoom, fuso }: { dias: { iso: string; inicio: number
 function Legenda({ porRecurso }: { porRecurso: boolean }) {
   const itens = [
     { cor: "bg-barra", texto: "Programada" },
-    { cor: "bg-violeta", texto: "Data fixada", icone: "alfinete" },
-    { cor: "bg-sucesso", texto: "Em execução", icone: "iniciar" },
+    { cor: "bg-barra-fixada", texto: "Data fixada", icone: "alfinete" },
+    { cor: "bg-barra-execucao", texto: "Em execução", icone: "iniciar" },
   ];
   return (
     <ul className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted" aria-label="Legenda">
@@ -762,7 +763,7 @@ function Legenda({ porRecurso }: { porRecurso: boolean }) {
         </li>
       ) : (
         <li className="flex items-center gap-1.5">
-          <span className="inline-block h-3 w-0 border-l-2 border-dashed border-rosa" aria-hidden="true" />
+          <span className="inline-block h-3 w-0 border-l-2 border-dashed border-ink/70" aria-hidden="true" />
           Data de entrega
         </li>
       )}

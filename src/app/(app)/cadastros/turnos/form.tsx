@@ -36,8 +36,8 @@ export function FormTurno({
         <legend className="mb-2 text-sm font-semibold">Dias de trabalho</legend>
         <div className="flex flex-wrap gap-2">
           {diasDaSemana.map((rotulo, d) => (
-            <label key={d} className="flex h-11 cursor-pointer items-center gap-2 rounded-sm border border-borda px-3 text-sm has-[:checked]:border-azul-eletrico has-[:checked]:text-destaque">
-              <input type="checkbox" name="dia" value={d} defaultChecked={dias.includes(d)} className="h-4 w-4 accent-[var(--azul-eletrico)]" />
+            <label key={d} className="flex h-11 cursor-pointer items-center gap-2 rounded-sm border border-borda px-3 text-sm has-[:checked]:border-acento has-[:checked]:text-destaque">
+              <input type="checkbox" name="dia" value={d} defaultChecked={dias.includes(d)} className="h-4 w-4 accent-[var(--acento)]" />
               {rotulo}
             </label>
           ))}
@@ -59,7 +59,7 @@ export function FormTurno({
         ))}
       </fieldset>
       <label className="flex min-h-11 items-center gap-3 text-sm font-semibold">
-        <input type="checkbox" name="ativo" defaultChecked={turno?.ativo ?? true} className="h-5 w-5 accent-[var(--azul-eletrico)]" />
+        <input type="checkbox" name="ativo" defaultChecked={turno?.ativo ?? true} className="h-5 w-5 accent-[var(--acento)]" />
         Ativo
       </label>
       <div className="flex flex-wrap gap-2">

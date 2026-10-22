@@ -57,7 +57,7 @@ export default async function VisaoGeralPage() {
             <Link
               key={a.href}
               href={a.href}
-              className="group flex min-h-16 items-center gap-3 rounded-md border border-borda bg-surface-2 px-3 py-3 sm:px-4 transition-colors hover:border-violeta-claro"
+              className="group flex min-h-16 items-center gap-3 rounded-md border border-borda bg-surface-2 px-3 py-3 sm:px-4 transition-colors hover:border-acento"
             >
               <span className="degrade-marca flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-primaria-texto sm:h-10 sm:w-10">
                 <Icone nome={a.icone} tamanho={20} />
@@ -146,7 +146,7 @@ export default async function VisaoGeralPage() {
               </h2>
               <p className="text-xs text-muted">Pela programação aprovada · {d.totalEmRisco} no total</p>
             </div>
-            <Link href="/painel" className="inline-flex min-h-11 items-center rounded-full border border-borda px-4 text-sm font-semibold hover:border-violeta-claro">
+            <Link href="/painel" className="inline-flex min-h-11 items-center rounded-full border border-borda px-4 text-sm font-semibold hover:border-acento">
               Ver todas
             </Link>
           </div>
@@ -212,7 +212,7 @@ export default async function VisaoGeralPage() {
                     </span>
                   </div>
                   <div className="h-2 w-full overflow-hidden rounded-full bg-surface" aria-hidden="true">
-                    <div className="h-full rounded-full bg-rosa" style={{ width: `${p.percentual * 100}%` }} />
+                    <div className="h-full rounded-full bg-alerta" style={{ width: `${p.percentual * 100}%` }} />
                   </div>
                 </li>
               ))}

@@ -1,74 +1,89 @@
 @import "tailwindcss";
 
 /*
-  Design system Camargo TI.
+  Design system do Camargo MES.
   Para um cliente com marca própria, troque só os valores em :root e
   [data-theme="light"]; todo o sistema acompanha.
+
+  Regra 60-30-10 (paleta #0F0F0F · #202020 · #5DD62C · #337418 · #F8F8F8):
+    60%  base     → --surface    (fundo das telas)
+    30%  apoio    → --surface-2  (menu lateral, cards, tabelas) + --ink (texto)
+    10%  destaque → --acento     (botão principal, item ativo, links, foco, indicador em destaque)
+  O verde fica reservado a ação e destaque; estados (erro, alerta) têm cores próprias.
 */
 
-/* Tema escuro (padrão da marca) */
+/* Tema escuro (padrão) */
 :root {
-  --azul-royal: #2635cb;
-  --azul-profundo: #0c1884;
-  --azul-eletrico: #0066f0;
-  --violeta: #6030f0;
-  --lavanda: #a0b0f0;
+  --verde: #5dd62c;
+  --verde-escuro: #337418;
+  --preto: #0f0f0f;
+  --grafite: #202020;
+  --branco: #f8f8f8;
 
-  --surface: #0c1014;
-  --surface-2: #151a24;
-  --borda: #262c3a;
-  --ink: #f2f4fc;
-  --muted: #a3a9bf;
-  --destaque-texto: #a0b0f0;
-  --sucesso: #4ade80;
+  --surface: var(--preto);
+  --surface-2: var(--grafite);
+  --borda: #2f2f2f;
+  --ink: var(--branco);
+  --muted: #a3a3a3;
+  --destaque-texto: var(--verde);
+  --sucesso: var(--verde);
   --erro: #f87171;
   --alerta: #fbbf24;
-  /* Gantt: barra programada e fundo fora do turno */
-  --barra: #2f3fd6;
-  --barra-texto: #ffffff;
-  --fora-turno: #10141b;
-  /* Destaque da marca e séries de gráfico (validadas para contraste e daltonismo) */
-  --rosa: #ec4899;
-  --violeta-claro: #8b6cf6;
-  --serie-1: #8b6cf6;
-  --serie-2: #ec4899;
 
-  --primaria: var(--azul-royal);
-  --primaria-hover: var(--azul-profundo);
-  --primaria-texto: #ffffff;
+  --acento: var(--verde);
+  --acento-escuro: var(--verde-escuro);
+  --primaria: var(--verde);
+  --primaria-hover: #4cb823;
+  --primaria-texto: var(--preto);
+
+  /* Gantt: programada (verde escuro), data fixada (verde), em execução (branco) */
+  --barra: var(--verde-escuro);
+  --barra-texto: var(--branco);
+  --barra-fixada: var(--verde);
+  --barra-fixada-texto: var(--preto);
+  --barra-execucao: var(--branco);
+  --barra-execucao-texto: var(--preto);
+  --fora-turno: #161616;
+
+  /* Séries de gráfico (validadas para contraste e daltonismo neste fundo) */
+  --serie-1: #3fa61a;
+  --serie-2: #c8507e;
 
   color-scheme: dark;
 }
 
-/* Tema claro (propostas, documentos, clientes que preferem claro) */
+/* Tema claro (terminal do chão de fábrica e quem preferir claro) */
 [data-theme="light"] {
-  --surface: #ffffff;
-  --surface-2: #f4f5fb;
-  --borda: #e0e3ef;
-  --ink: #0c1014;
-  --muted: #565c72;
-  --destaque-texto: #2635cb;
-  --sucesso: #15803d;
+  --surface: var(--branco);
+  --surface-2: #ffffff;
+  --borda: #e3e3e3;
+  --ink: var(--preto);
+  --muted: #5a5a5a;
+  --destaque-texto: var(--verde-escuro);
+  --sucesso: #2e7d14;
   --erro: #dc2626;
   --alerta: #b45309;
-  --barra: #2635cb;
-  --barra-texto: #ffffff;
-  --fora-turno: #e9ebf4;
-  --rosa: #d0307e;
-  --violeta-claro: #6030f0;
-  --serie-1: #6030f0;
-  --serie-2: #d0307e;
+
+  --acento: var(--verde-escuro);
+  --primaria: var(--verde-escuro);
+  --primaria-hover: #285c12;
+  --primaria-texto: var(--branco);
+
+  --barra: var(--verde-escuro);
+  --barra-texto: var(--branco);
+  --barra-fixada: var(--verde);
+  --barra-fixada-texto: var(--preto);
+  --barra-execucao: var(--grafite);
+  --barra-execucao-texto: var(--branco);
+  --fora-turno: #ececec;
+
+  --serie-1: #337418;
+  --serie-2: #c8507e;
 
   color-scheme: light;
 }
 
 @theme inline {
-  --color-azul-royal: var(--azul-royal);
-  --color-azul-profundo: var(--azul-profundo);
-  --color-azul-eletrico: var(--azul-eletrico);
-  --color-violeta: var(--violeta);
-  --color-lavanda: var(--lavanda);
-
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
   --color-borda: var(--borda);
@@ -78,16 +93,20 @@
   --color-sucesso: var(--sucesso);
   --color-erro: var(--erro);
   --color-alerta: var(--alerta);
-  --color-barra: var(--barra);
-  --color-barra-texto: var(--barra-texto);
-  --color-fora-turno: var(--fora-turno);
-  --color-rosa: var(--rosa);
-  --color-violeta-claro: var(--violeta-claro);
-  --color-serie-1: var(--serie-1);
-  --color-serie-2: var(--serie-2);
+  --color-acento: var(--acento);
+  --color-acento-escuro: var(--acento-escuro);
   --color-primaria: var(--primaria);
   --color-primaria-hover: var(--primaria-hover);
   --color-primaria-texto: var(--primaria-texto);
+  --color-barra: var(--barra);
+  --color-barra-texto: var(--barra-texto);
+  --color-barra-fixada: var(--barra-fixada);
+  --color-barra-fixada-texto: var(--barra-fixada-texto);
+  --color-barra-execucao: var(--barra-execucao);
+  --color-barra-execucao-texto: var(--barra-execucao-texto);
+  --color-fora-turno: var(--fora-turno);
+  --color-serie-1: var(--serie-1);
+  --color-serie-2: var(--serie-2);
 
   --font-display: "Montserrat Variable", system-ui, sans-serif;
   --font-sans: "Inter Variable", system-ui, sans-serif;
@@ -111,18 +130,21 @@
     @apply font-display;
   }
   :focus-visible {
-    outline: 2px solid var(--azul-eletrico);
+    outline: 2px solid var(--acento);
     outline-offset: 2px;
+  }
+  ::selection {
+    background: color-mix(in srgb, var(--acento) 35%, transparent);
   }
 }
 
-/* Degradê da marca (violeta → rosa), para destaques da Visão geral. */
+/* Destaques (parte dos 10%): fundo verde, texto em verde e borda com brilho verde. */
 @layer components {
   .degrade-marca {
-    background-image: linear-gradient(120deg, var(--violeta) 0%, var(--violeta-claro) 45%, var(--rosa) 100%);
+    background-image: linear-gradient(120deg, var(--primaria) 0%, var(--primaria-hover) 100%);
   }
   .texto-degrade {
-    background-image: linear-gradient(90deg, var(--violeta-claro), var(--rosa));
+    background-image: linear-gradient(90deg, var(--acento), color-mix(in srgb, var(--acento) 60%, var(--ink)));
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -131,6 +153,6 @@
     border: 1px solid transparent;
     background:
       linear-gradient(var(--surface-2), var(--surface-2)) padding-box,
-      linear-gradient(120deg, color-mix(in srgb, var(--violeta-claro) 70%, transparent), color-mix(in srgb, var(--rosa) 70%, transparent)) border-box;
+      linear-gradient(135deg, color-mix(in srgb, var(--acento) 55%, transparent), var(--borda) 45%, var(--borda)) border-box;
   }
 }

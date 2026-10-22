@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 
 const baseCampo =
   "w-full rounded-sm border border-borda bg-surface px-3 text-sm text-ink placeholder:text-muted " +
-  "focus:border-azul-eletrico focus:outline-none aria-[invalid=true]:border-erro";
+  "focus:border-acento focus:outline-none aria-[invalid=true]:border-erro";
 
 export function Input({ className, ...props }: React.InputHTMLAttributes<HTMLInputElement>) {
   return <input className={cn(baseCampo, "h-11", className)} {...props} />;

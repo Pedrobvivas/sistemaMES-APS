@@ -53,6 +53,7 @@ async function arrastar(page: Page, barra: ReturnType<Page["locator"]>, dx: numb
 
 test("configuração inicial e carga da demonstração", async () => {
   await page.goto("/configurar");
+  await page.screenshot({ path: "test-results/capturas/cores-login.jpg", type: "jpeg", quality: 30 });
   await page.getByLabel("Seu nome").fill(ADMIN.nome);
   await page.getByLabel("E-mail").fill(ADMIN.email);
   await page.getByLabel("Senha").fill(ADMIN.senha);
@@ -137,6 +138,7 @@ test("Gantt: ver por OP e por cliente, com filtros, e arrastar na visão por OP"
   await page.getByRole("button", { name: "Limpar filtros" }).first().click();
   await verPor("Cliente").click();
   await page.locator("#gantt").screenshot({ path: "test-results/capturas/gantt-por-cliente.jpg", type: "jpeg", quality: 35 });
+  await page.locator("#gantt").screenshot({ path: "test-results/capturas/cores-gantt.jpg", type: "jpeg", quality: 28 });
   await verPor("Recurso").click();
   await expect(page.getByText("Puncionadeira CNC").first()).toBeVisible();
 });
@@ -167,6 +169,7 @@ test("visão geral abre com indicadores, gráfico e listas", async () => {
   await expect(page.locator("article").filter({ hasText: "Entregas no prazo" }).getByText("%").first()).toBeVisible();
 
   await page.getByRole("button", { name: /boas, \d+ rejeitadas/ }).nth(25).hover();
+  await page.screenshot({ path: "test-results/capturas/cores-visao.jpg", type: "jpeg", quality: 30 });
   await page.screenshot({ path: "test-results/capturas/visao-geral-1.jpg", type: "jpeg", quality: 32 });
   await page.mouse.wheel(0, 700);
   await page.waitForTimeout(300);
@@ -245,6 +248,7 @@ test("terminal: iniciar, pausar com motivo, retomar e finalizar", async () => {
   await page.getByRole("button", { name: "Confirmar finalização" }).click();
   await expect(page.getByText(/Finalização registrada|excedente/)).toBeVisible();
   await page.screenshot({ path: "test-results/03-terminal.png", fullPage: true });
+  await page.screenshot({ path: "test-results/capturas/cores-terminal.jpg", type: "jpeg", quality: 30 });
 });
 
 test("painel abre com indicadores e Pareto", async () => {
