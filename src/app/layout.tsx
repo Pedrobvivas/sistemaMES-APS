@@ -10,12 +10,12 @@ export const metadata: Metadata = {
   description: "Sistema desenvolvido pela Camargo TI.",
 };
 
-// Aplica o tema salvo antes da página aparecer (evita piscar).
-const scriptTema = `try{var t=localStorage.getItem("tema");if(t)document.documentElement.dataset.theme=t}catch(e){}`;
+// Tema padrão: claro. Se a pessoa escolheu o escuro no botão de tema, aplica antes da página aparecer (evita piscar).
+const scriptTema = `try{var t=localStorage.getItem("tema");if(t==="dark"||t==="light")document.documentElement.dataset.theme=t}catch(e){}`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
+    <html lang="pt-BR" data-theme="light" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: scriptTema }} />
       </head>

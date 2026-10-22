@@ -12,7 +12,7 @@
   O verde fica reservado a ação e destaque; estados (erro, alerta) têm cores próprias.
 */
 
-/* Tema escuro (padrão) */
+/* Tema escuro (opcional, pelo botão de tema) */
 :root {
   --verde: #5dd62c;
   --verde-escuro: #337418;
@@ -52,7 +52,9 @@
   color-scheme: dark;
 }
 
-/* Tema claro (terminal do chão de fábrica e quem preferir claro) */
+/* Tema claro (padrão do sistema e do terminal do chão de fábrica).
+   60% #F8F8F8 (fundo) · 30% #FFFFFF (cards/menu) + #0F0F0F (texto) · 10% verde #5DD62C (botões, item ativo, destaques).
+   O verde-escuro #337418 fica para links e foco, onde o verde claro não teria contraste sobre branco. */
 [data-theme="light"] {
   --surface: var(--branco);
   --surface-2: #ffffff;
@@ -65,9 +67,9 @@
   --alerta: #b45309;
 
   --acento: var(--verde-escuro);
-  --primaria: var(--verde-escuro);
-  --primaria-hover: #285c12;
-  --primaria-texto: var(--branco);
+  --primaria: var(--verde);
+  --primaria-hover: #4cb823;
+  --primaria-texto: var(--preto);
 
   --barra: var(--verde-escuro);
   --barra-texto: var(--branco);
