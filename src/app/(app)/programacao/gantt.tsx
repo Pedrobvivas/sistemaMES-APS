@@ -702,11 +702,14 @@ function Barra({
       {item.segmentos.map((s) => (
         <span key={s.inicio} className={cn("absolute inset-y-0", cor)} style={{ left: xDe(s.inicio) - x, width: Math.max(1, xDe(s.fim) - xDe(s.inicio)) }} />
       ))}
-      <span className={cn("relative flex h-full items-center gap-1 px-1.5 text-xs font-semibold", corTexto)}>
-        {item.fixada && <Icone nome="alfinete" tamanho={12} />}
-        {item.emExecucao && <Icone nome="iniciar" tamanho={10} />}
-        {atrasada && <Icone nome="alerta" tamanho={12} />}
-        <span className="truncate">{rotulo}</span>
+      {/* Nome sobre etiqueta sólida: legível mesmo sobre o trecho translúcido (fora do turno). */}
+      <span className="relative flex h-full max-w-full items-center px-0.5">
+        <span className={cn("flex min-w-0 max-w-full items-center gap-1 rounded-sm px-1 py-0.5 text-xs font-semibold", cor, corTexto)}>
+          {item.fixada && <Icone nome="alfinete" tamanho={12} />}
+          {item.emExecucao && <Icone nome="iniciar" tamanho={10} />}
+          {atrasada && <Icone nome="alerta" tamanho={12} />}
+          <span className="truncate">{rotulo}</span>
+        </span>
       </span>
     </button>
   );
