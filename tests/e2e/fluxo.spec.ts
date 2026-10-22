@@ -73,7 +73,7 @@ test("Gantt: arrastar a OP gera versão sugerida com antes × depois e data fixa
   await expect(page.getByText("Aprovada · em vigor")).toBeVisible();
   await page.screenshot({ path: "test-results/01-gantt-aprovado.png", fullPage: true });
 
-  const barra = page.locator('button[aria-label^="OP 4310 · Corte."]');
+  const barra = page.locator('button[aria-label^="OP 4310 · Corte ·"]');
   await expect(barra).toBeVisible();
   await expect(barra).not.toHaveAttribute("aria-label", /Data fixada/);
 
@@ -81,7 +81,7 @@ test("Gantt: arrastar a OP gera versão sugerida com antes × depois e data fixa
   await expect(page).toHaveURL(/versao=/, { timeout: 30_000 });
   await expect(page.getByText("Sugerida · aguardando aprovação")).toBeVisible();
   await expect(page.getByRole("heading", { name: /Antes × depois/ })).toBeVisible();
-  await expect(page.locator('button[aria-label^="OP 4310 · Corte."]')).toHaveAttribute("aria-label", /Data fixada/);
+  await expect(page.locator('button[aria-label^="OP 4310 · Corte ·"]')).toHaveAttribute("aria-label", /Data fixada/);
   await expect(page.getByText(/OP 4310 movida para começar em/).first()).toBeVisible();
   await page.screenshot({ path: "test-results/02-gantt-sugerido.png", fullPage: true });
 });
@@ -89,8 +89,8 @@ test("Gantt: arrastar a OP gera versão sugerida com antes × depois e data fixa
 test("Gantt: só a operação, antes da anterior, é recusado com explicação", async () => {
   await abrir(page, "/programacao");
   await page.getByText("Só a operação", { exact: true }).click();
-  const corte = page.locator('button[aria-label^="OP 4310 · Corte."]');
-  const dobra = page.locator('button[aria-label^="OP 4310 · Dobra."]');
+  const corte = page.locator('button[aria-label^="OP 4310 · Corte ·"]');
+  const dobra = page.locator('button[aria-label^="OP 4310 · Dobra ·"]');
   await dobra.scrollIntoViewIfNeeded();
   const [cx, dx] = [await corte.boundingBox(), await dobra.boundingBox()];
   if (!cx || !dx) throw new Error("barras sem posição");
@@ -100,9 +100,48 @@ test("Gantt: só a operação, antes da anterior, é recusado com explicação",
   await expect(page.getByText("Sugerida · aguardando aprovação")).toBeVisible(); // nada mudou
 });
 
+test("Gantt: ver por OP e por cliente, com filtros, e arrastar na visão por OP", async () => {
+  await abrir(page, "/programacao");
+  const verPor = (nome: string) => page.getByRole("group", { name: "Ver por" }).locator("label").filter({ hasText: new RegExp(`^${nome}$`) });
+  await verPor("OP").click();
+  await expect(page).toHaveURL(/ver=op/);
+  // Filtro por OP: só a 4309 fica no Gantt.
+  await page.getByLabel("Buscar OP").fill("4309");
+  await expect(page.getByText(/^1 de \d+ OPs$/)).toBeVisible();
+  await expect(page.getByRole("link", { name: "OP 4309" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "OP 4310" })).toHaveCount(0);
+  await expect(page.getByText("Data de entrega")).toBeVisible();
+  await page.screenshot({ path: "test-results/capturas/gantt-por-op.jpg", type: "jpeg", quality: 32 });
+
+  // Arrastar na visão por OP gera nova versão e mantém visão e filtro.
+  const barra = page.locator('button[aria-label^="OP 4309 · Corte ·"]');
+  await arrastar(page, barra, 220);
+  await expect(page).toHaveURL(/versao=.*ver=op|ver=op.*versao=/, { timeout: 30_000 });
+  await expect(page.getByText("Sugerida · aguardando aprovação")).toBeVisible();
+  await expect(page.getByLabel("Buscar OP")).toHaveValue("4309");
+
+  // Ver por cliente, filtrando um cliente.
+  await page.getByRole("button", { name: "Limpar filtros" }).first().click();
+  await verPor("Cliente").click();
+  await page.locator("#filtro-cliente").selectOption("Solar Vale Energia");
+  await expect(page.getByText(/^Solar Vale Energia · \d+ OPs?$/)).toBeVisible();
+  await expect(page.getByText(/^Hospital Santa Clara · /)).toHaveCount(0);
+
+  // Situação "Com data fixada": aparecem as OPs arrastadas.
+  await page.locator("#filtro-cliente").selectOption("");
+  await page.getByLabel("Situação").selectOption("fixadas");
+  await expect(page.getByRole("link", { name: "OP 4309" })).toBeVisible();
+  await page.screenshot({ path: "test-results/capturas/gantt-por-cliente.jpg", type: "jpeg", quality: 32 });
+
+  // Volta à visão por recurso sem filtros.
+  await page.getByRole("button", { name: "Limpar filtros" }).first().click();
+  await verPor("Recurso").click();
+  await expect(page.getByText("Puncionadeira CNC").first()).toBeVisible();
+});
+
 test("Gantt: painel de detalhes explica a posição e a versão é aprovada", async () => {
   await abrir(page, "/programacao");
-  await page.locator('button[aria-label^="OP 4306 · Corte."]').click();
+  await page.locator('button[aria-label^="OP 4306 · Corte ·"]').click();
   await expect(page.getByRole("heading", { name: "OP 4306 · Corte" })).toBeVisible();
   await expect(page.getByText("Por que está aqui")).toBeVisible();
   await page.getByRole("button", { name: "Aprovar programação" }).click();
