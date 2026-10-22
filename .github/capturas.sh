@@ -5,6 +5,11 @@
 set -e
 [ -d test-results/capturas ] || exit 0
 if [ ! -f /tmp/capturas.b64 ]; then
+  # "[capturas gantt]" no commit = só os arquivos com "gantt" no nome.
+  filtro=$(printf "%s" "$MENSAGEM_COMMIT" | sed -n 's/.*\[capturas \([a-z0-9-]*\)\].*/\1/p')
+  if [ -n "$filtro" ]; then
+    find test-results/capturas -type f ! -name "*$filtro*" -delete
+  fi
   tar czf /tmp/capturas.tgz -C test-results capturas
   base64 -w0 /tmp/capturas.tgz > /tmp/capturas.b64
   echo "tamanho base64: $(wc -c < /tmp/capturas.b64)"

@@ -278,7 +278,7 @@ export function Gantt({ dados, podeEditar }: { dados: DadosGantt; podeEditar: bo
   const topoDica = arraste?.ativo ? topoBarra(arraste.item, arraste.recursoAlvo) : undefined;
 
   return (
-    <div className="flex flex-col gap-3">
+    <div id="gantt" className="flex flex-col gap-3">
       {/* Visão e filtros */}
       <div className="flex flex-wrap items-end gap-3 rounded-md border border-borda bg-surface-2 p-3">
         <fieldset className="flex flex-col gap-1">

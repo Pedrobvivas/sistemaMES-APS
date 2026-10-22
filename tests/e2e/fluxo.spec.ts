@@ -111,7 +111,7 @@ test("Gantt: ver por OP e por cliente, com filtros, e arrastar na visão por OP"
   await expect(page.getByRole("link", { name: "OP 4309" })).toBeVisible();
   await expect(page.getByRole("link", { name: "OP 4310" })).toHaveCount(0);
   await expect(page.getByText("Data de entrega")).toBeVisible();
-  await page.screenshot({ path: "test-results/capturas/gantt-por-op.jpg", type: "jpeg", quality: 32 });
+  await page.locator("#gantt").screenshot({ path: "test-results/capturas/gantt-por-op.jpg", type: "jpeg", quality: 35 });
 
   // Arrastar na visão por OP gera nova versão e mantém visão e filtro.
   const barra = page.locator('button[aria-label^="OP 4309 · Corte ·"]');
@@ -131,10 +131,12 @@ test("Gantt: ver por OP e por cliente, com filtros, e arrastar na visão por OP"
   await page.locator("#filtro-cliente").selectOption("");
   await page.getByLabel("Situação").selectOption("fixadas");
   await expect(page.getByRole("link", { name: "OP 4309" })).toBeVisible();
-  await page.screenshot({ path: "test-results/capturas/gantt-por-cliente.jpg", type: "jpeg", quality: 32 });
+  await page.locator("#gantt").screenshot({ path: "test-results/capturas/gantt-fixadas.jpg", type: "jpeg", quality: 35 });
 
   // Volta à visão por recurso sem filtros.
   await page.getByRole("button", { name: "Limpar filtros" }).first().click();
+  await verPor("Cliente").click();
+  await page.locator("#gantt").screenshot({ path: "test-results/capturas/gantt-por-cliente.jpg", type: "jpeg", quality: 35 });
   await verPor("Recurso").click();
   await expect(page.getByText("Puncionadeira CNC").first()).toBeVisible();
 });

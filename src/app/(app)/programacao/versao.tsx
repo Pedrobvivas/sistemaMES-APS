@@ -137,7 +137,7 @@ export function CabecalhoVersao({ dados, podeEditar, podeAprovar }: { dados: Dad
         ].map((x) => (
           <div key={x.rotulo} className="rounded-md border border-borda bg-surface-2 px-3 py-2">
             <dt className="text-xs text-muted">{x.rotulo}</dt>
-            <dd className={x.alerta ? "font-mono text-lg font-bold text-erro" : "font-mono text-lg font-bold"}>{x.valor}</dd>
+            <dd className={x.alerta ? "text-lg font-bold tabular-nums text-erro" : "text-lg font-bold tabular-nums"}>{x.valor}</dd>
           </div>
         ))}
       </dl>

@@ -97,19 +97,27 @@ jobs:
           echo "::error title=Log do servidor (e2e)::${msg}"
 
       - name: Capturas em texto (1/4)
-        if: always() && contains(github.event.head_commit.message, '[capturas]')
+        if: always() && contains(github.event.head_commit.message, '[capturas')
+        env:
+          MENSAGEM_COMMIT: ${{ github.event.head_commit.message }}
         run: sh .github/capturas.sh 0
 
       - name: Capturas em texto (2/4)
-        if: always() && contains(github.event.head_commit.message, '[capturas]')
+        if: always() && contains(github.event.head_commit.message, '[capturas')
+        env:
+          MENSAGEM_COMMIT: ${{ github.event.head_commit.message }}
         run: sh .github/capturas.sh 10
 
       - name: Capturas em texto (3/4)
-        if: always() && contains(github.event.head_commit.message, '[capturas]')
+        if: always() && contains(github.event.head_commit.message, '[capturas')
+        env:
+          MENSAGEM_COMMIT: ${{ github.event.head_commit.message }}
         run: sh .github/capturas.sh 20
 
       - name: Capturas em texto (4/4)
-        if: always() && contains(github.event.head_commit.message, '[capturas]')
+        if: always() && contains(github.event.head_commit.message, '[capturas')
+        env:
+          MENSAGEM_COMMIT: ${{ github.event.head_commit.message }}
         run: sh .github/capturas.sh 30
 
       - name: Relatório e capturas
