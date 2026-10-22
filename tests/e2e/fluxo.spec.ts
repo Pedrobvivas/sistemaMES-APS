@@ -126,13 +126,13 @@ test("visão geral abre com indicadores, gráfico e listas", async () => {
   await expect(page.locator("article").filter({ hasText: "Entregas no prazo" }).getByText("%").first()).toBeVisible();
 
   await page.getByRole("button", { name: /boas, \d+ rejeitadas/ }).nth(25).hover();
-  await page.screenshot({ path: "test-results/capturas/visao-geral-1.jpg", type: "jpeg", quality: 45 });
+  await page.screenshot({ path: "test-results/capturas/visao-geral-1.jpg", type: "jpeg", quality: 32 });
   await page.mouse.wheel(0, 700);
   await page.waitForTimeout(300);
-  await page.screenshot({ path: "test-results/capturas/visao-geral-2.jpg", type: "jpeg", quality: 45 });
+  await page.screenshot({ path: "test-results/capturas/visao-geral-2.jpg", type: "jpeg", quality: 32 });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/visao-geral");
-  await page.screenshot({ path: "test-results/capturas/visao-geral-celular.jpg", type: "jpeg", quality: 40 });
+  await page.screenshot({ path: "test-results/capturas/visao-geral-celular.jpg", type: "jpeg", quality: 28 });
   await page.setViewportSize({ width: 1440, height: 900 });
 });
 
@@ -172,6 +172,12 @@ test("OP criada pode ser reaberta pela lista, antes e depois de liberar", async 
   await page.getByRole("link", { name: "9001", exact: true }).click();
   await expect(page.getByRole("heading", { name: "OP 9001" })).toBeVisible();
   await expect(page.getByText("Não conseguimos carregar esta página")).toHaveCount(0);
+
+  // A lista abre só com OPs em aberto; "Todas" mostra também as concluídas.
+  await abrir(page, "/ordens");
+  await expect(page.getByRole("link", { name: "4101", exact: true })).toHaveCount(0);
+  await abrir(page, "/ordens?status=todas&ordem=codigo");
+  await expect(page.getByRole("link", { name: "4101", exact: true })).toBeVisible();
 
   // OP da demonstração (já em execução, com apontamentos) também abre.
   await abrir(page, "/ordens?q=4301");

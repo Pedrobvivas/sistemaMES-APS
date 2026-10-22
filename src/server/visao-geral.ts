@@ -80,6 +80,7 @@ async function resumoPeriodo(j: Janela) {
 export type Indicador = {
   chave: string;
   rotulo: string;
+  periodo: string;
   valor: string;
   detalhe: string;
   variacao: Variacao;
@@ -153,7 +154,8 @@ export async function carregarVisaoGeral() {
   const indicadores: Indicador[] = [
     {
       chave: "otd",
-      rotulo: `Entregas no prazo (${DIAS_PERIODO} dias)`,
+      rotulo: "Entregas no prazo",
+      periodo: `${DIAS_PERIODO} dias`,
       valor: pct(a.entregas.taxa),
       detalhe: a.entregas.total ? `${a.entregas.noPrazo} de ${a.entregas.total} OPs concluídas` : "Nenhuma OP concluída no período",
       variacao: variacaoPontos(a.entregas.taxa, b.entregas.taxa),
@@ -163,7 +165,8 @@ export async function carregarVisaoGeral() {
     },
     {
       chave: "pecas",
-      rotulo: `Produtos acabados (${DIAS_PERIODO} dias)`,
+      rotulo: "Produtos acabados",
+      periodo: `${DIAS_PERIODO} dias`,
       valor: num(a.boa),
       detalhe: "peças boas na última operação",
       variacao: variacaoPercentual(a.boa, b.boa),
@@ -173,7 +176,8 @@ export async function carregarVisaoGeral() {
     },
     {
       chave: "qualidade",
-      rotulo: `Qualidade (${DIAS_PERIODO} dias)`,
+      rotulo: "Qualidade",
+      periodo: `${DIAS_PERIODO} dias`,
       valor: pct(a.qualidade),
       detalhe: a.boa + a.rejeitada ? `${num(a.rejeitada)} rejeitada(s)` : "Sem apontamentos no período",
       variacao: variacaoPontos(a.qualidade, b.qualidade),
@@ -183,7 +187,8 @@ export async function carregarVisaoGeral() {
     },
     {
       chave: "concluidas",
-      rotulo: `OPs concluídas (${DIAS_PERIODO} dias)`,
+      rotulo: "OPs concluídas",
+      periodo: `${DIAS_PERIODO} dias`,
       valor: num(a.concluidas),
       detalhe: `${num(b.concluidas)} nos ${DIAS_PERIODO} dias anteriores`,
       variacao: variacaoPercentual(a.concluidas, b.concluidas),
@@ -194,6 +199,7 @@ export async function carregarVisaoGeral() {
     {
       chave: "carteira",
       rotulo: "OPs em carteira",
+      periodo: "agora",
       valor: num(carteira.length),
       detalhe: aprovada ? `${atrasadas} com atraso previsto` : "sem programação aprovada",
       variacao: null,
@@ -203,7 +209,8 @@ export async function carregarVisaoGeral() {
     },
     {
       chave: "carga",
-      rotulo: `Carga programada (${DIAS_CARGA} dias)`,
+      rotulo: "Carga programada",
+      periodo: `próx. ${DIAS_CARGA} dias`,
       valor: aprovada ? horas(totalOcupado) : "—",
       detalhe: aprovada ? `de ${horas(totalDisponivel)} de turno disponíveis` : "sem programação aprovada",
       variacao: null,
@@ -213,7 +220,8 @@ export async function carregarVisaoGeral() {
     },
     {
       chave: "ocupacao",
-      rotulo: `Ocupação dos recursos (${DIAS_CARGA} dias)`,
+      rotulo: "Ocupação dos recursos",
+      periodo: `próx. ${DIAS_CARGA} dias`,
       valor: aprovada ? pct(razao(totalOcupado, totalDisponivel)) : "—",
       detalhe: "programado ÷ tempo de turno",
       variacao: null,
@@ -223,7 +231,8 @@ export async function carregarVisaoGeral() {
     },
     {
       chave: "paradas",
-      rotulo: `Tempo parado (${DIAS_PERIODO} dias)`,
+      rotulo: "Tempo parado",
+      periodo: `${DIAS_PERIODO} dias`,
       valor: horas(a.paradas.totalMin),
       detalhe: a.paradas.totalMin ? `${pct(razao(a.paradas.naoPlanejadaMin, a.paradas.totalMin))} não planejado` : "Nenhuma parada apontada",
       variacao: variacaoPercentual(a.paradas.totalMin, b.paradas.totalMin),

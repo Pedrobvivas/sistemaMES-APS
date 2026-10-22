@@ -109,7 +109,7 @@ export default async function VisaoGeralPage() {
               </h2>
               <p className="text-xs text-muted">Programado ÷ tempo de turno, próximos {DIAS_CARGA} dias</p>
             </div>
-            <span className="text-xs text-muted">{d.aprovada ? `Programação nº ${d.aprovada.numero}` : ""}</span>
+            <span className="whitespace-nowrap text-xs text-muted">{d.aprovada ? `Programação nº ${d.aprovada.numero}` : ""}</span>
           </div>
           {!d.aprovada ? (
             <p className="text-sm text-muted">Indisponível: aprove uma programação no Gantt.</p>
@@ -121,7 +121,7 @@ export default async function VisaoGeralPage() {
                 <li key={c.id} className="flex flex-col gap-1.5">
                   <div className="flex items-baseline justify-between gap-3 text-sm">
                     <span className="truncate">{c.nome}</span>
-                    <span className="font-mono font-semibold">{c.taxa === null ? "—" : `${Math.round(c.taxa * 100)}%`}</span>
+                    <span className="font-semibold tabular-nums">{c.taxa === null ? "—" : `${Math.round(c.taxa * 100)}%`}</span>
                   </div>
                   <div className="h-2 w-full overflow-hidden rounded-full bg-surface" aria-hidden="true">
                     <div className="degrade-marca h-full rounded-full" style={{ width: `${Math.min(100, (c.taxa ?? 0) * 100)}%` }} />
@@ -207,7 +207,7 @@ export default async function VisaoGeralPage() {
                 <li key={p.motivo} className="flex flex-col gap-1.5">
                   <div className="flex items-baseline justify-between gap-3 text-sm">
                     <span className="truncate">{p.motivo}</span>
-                    <span className="font-mono">
+                    <span className="whitespace-nowrap tabular-nums">
                       {formatarDuracao(p.minutos)} <span className="text-xs text-muted">· {Math.round(p.percentual * 100)}%</span>
                     </span>
                   </div>
@@ -243,7 +243,10 @@ function CartaoIndicador({ indicador: i, destaque = false }: { indicador: Indica
       )}
     >
       <div className="flex items-start justify-between gap-2">
-        <h2 className={cn("text-sm font-semibold", destaque ? "text-primaria-texto/90" : "text-muted")}>{i.rotulo}</h2>
+        <h2 className={cn("min-w-0 text-sm font-semibold", destaque ? "text-primaria-texto/90" : "text-muted")}>
+          <span className="block truncate">{i.rotulo}</span>
+          <span className={cn("block text-[11px] font-normal", destaque ? "text-primaria-texto/75" : "text-muted/80")}>{i.periodo}</span>
+        </h2>
         <button
           type="button"
           title={i.definicao}
@@ -253,12 +256,12 @@ function CartaoIndicador({ indicador: i, destaque = false }: { indicador: Indica
           <Icone nome="info" tamanho={16} />
         </button>
       </div>
-      <p className="font-display text-3xl font-bold tracking-tight">{i.valor}</p>
+      <p className="font-display text-3xl font-bold tracking-tight tabular-nums">{i.valor}</p>
       <div className="mt-auto flex flex-wrap items-center gap-2 text-xs">
         {v && (
           <span
             className={cn(
-              "rounded-full px-2 py-0.5 font-mono font-semibold",
+              "rounded-full px-2 py-0.5 font-semibold tabular-nums",
               destaque
                 ? "bg-primaria-texto/20 text-primaria-texto"
                 : bom === null

@@ -15,18 +15,19 @@ function rotuloDia(iso: string, longo = false) {
   return `${semana[new Date(Date.UTC(a, m - 1, d)).getUTCDay()]}, ${dia}`;
 }
 
-// Escala "bonita": 1, 2, 5 × 10^n acima do máximo.
-function topoEscala(maximo: number) {
-  if (maximo <= 0) return 4;
-  const potencia = 10 ** Math.floor(Math.log10(maximo));
-  for (const f of [1, 2, 2.5, 5, 10]) if (f * potencia >= maximo) return f * potencia;
+// Escala "bonita": 4 divisões inteiras de 1, 2, 5 × 10^n que cobrem o máximo.
+function passoEscala(maximo: number) {
+  const bruto = Math.max(1, maximo / 4);
+  const potencia = 10 ** Math.floor(Math.log10(bruto));
+  for (const f of [1, 2, 5, 10]) if (f * potencia >= bruto) return Math.max(1, f * potencia);
   return 10 * potencia;
 }
 
 export function GraficoProducao({ dias }: { dias: Dia[] }) {
   const [foco, setFoco] = useState<number | null>(null);
-  const topo = topoEscala(Math.max(...dias.map((d) => d.boa + d.rejeitada)));
-  const marcas = [0, topo / 4, topo / 2, (3 * topo) / 4, topo];
+  const passo = passoEscala(Math.max(...dias.map((d) => d.boa + d.rejeitada)));
+  const topo = passo * 4;
+  const marcas = [0, passo, 2 * passo, 3 * passo, topo];
   const total = dias.reduce((s, d) => s + d.boa + d.rejeitada, 0);
   const atual = foco !== null ? dias[foco] : null;
 

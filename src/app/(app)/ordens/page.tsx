@@ -1,4 +1,4 @@
-import { and, asc, count, eq, ilike, or, type SQL } from "drizzle-orm";
+import { and, asc, count, eq, ilike, inArray, or, type SQL } from "drizzle-orm";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Icone } from "@/components/layout/icone";
@@ -34,12 +34,16 @@ export default async function OrdensPage({
   await exigirPermissao("ordens:editar");
   const sp = await searchParams;
   const busca = (sp.q ?? "").trim();
+  // Filtro de status: "abertas" (padrão: rascunho, liberada, em execução), "todas" ou um status.
+  // Com busca por texto e sem filtro escolhido, procura em todas.
   const status = (Object.keys(rotuloStatusOrdem) as StatusOrdem[]).includes(sp.status as StatusOrdem) ? (sp.status as StatusOrdem) : null;
+  const filtroStatus = status ?? (sp.status === "todas" || sp.status === "abertas" ? sp.status : busca ? "todas" : "abertas");
   const ordem = (sp.ordem && sp.ordem in ordenacoes ? sp.ordem : "entrega") as keyof typeof ordenacoes;
   const pagina = Math.max(1, Number(sp.pagina) || 1);
 
   const filtros: SQL[] = [];
   if (status) filtros.push(eq(ordensProducao.status, status));
+  else if (filtroStatus === "abertas") filtros.push(inArray(ordensProducao.status, ["rascunho", "liberada", "em_execucao"]));
   if (busca) {
     filtros.push(
       or(
@@ -74,7 +78,7 @@ export default async function OrdensPage({
   const paginas = Math.max(1, Math.ceil(total / POR_PAGINA));
   const link = (mudar: Record<string, string | number | null>) => {
     const p = new URLSearchParams();
-    const base = { q: busca, status: status ?? "", ordem, pagina: String(pagina), ...mudar };
+    const base = { q: busca, status: filtroStatus === "abertas" && !busca ? "" : filtroStatus, ordem, pagina: String(pagina), ...mudar };
     for (const [k, v] of Object.entries(base)) if (v !== null && v !== "" && !(k === "pagina" && v === "1")) p.set(k, String(v));
     return `/ordens?${p.toString()}`;
   };
@@ -103,8 +107,9 @@ export default async function OrdensPage({
           <label htmlFor="status" className="text-xs font-semibold text-muted">
             Status
           </label>
-          <Select id="status" name="status" defaultValue={status ?? ""} className="w-44">
-            <option value="">Todos</option>
+          <Select id="status" name="status" defaultValue={filtroStatus} className="w-44">
+            <option value="abertas">Em aberto</option>
+            <option value="todas">Todas</option>
             {Object.entries(rotuloStatusOrdem).map(([v, r]) => (
               <option key={v} value={v}>
                 {r}
@@ -125,7 +130,7 @@ export default async function OrdensPage({
         <Button type="submit" variante="secundaria">
           Filtrar
         </Button>
-        {(busca || status) && (
+        {(busca || filtroStatus !== "abertas") && (
           <Link href="/ordens" className={buttonClasses({ variante: "fantasma" })}>
             Limpar filtros
           </Link>
@@ -134,8 +139,8 @@ export default async function OrdensPage({
 
       {lista.length === 0 ? (
         <Vazio
-          titulo={busca || status ? "Nenhuma OP encontrada" : "Nenhuma OP cadastrada"}
-          descricao={busca || status ? "Ajuste os filtros." : "Crie a primeira ordem de produção."}
+          titulo={busca || status ? "Nenhuma OP encontrada" : filtroStatus === "abertas" ? "Nenhuma OP em aberto" : "Nenhuma OP cadastrada"}
+          descricao={busca || status ? "Ajuste os filtros." : filtroStatus === "abertas" ? "Crie uma OP ou escolha “Todas” no filtro de status." : "Crie a primeira ordem de produção."}
         />
       ) : (
         <>
