@@ -57,14 +57,14 @@ export default async function VisaoGeralPage() {
             <Link
               key={a.href}
               href={a.href}
-              className="group flex min-h-16 items-center gap-3 rounded-md border border-borda bg-surface-2 px-4 py-3 transition-colors hover:border-violeta-claro"
+              className="group flex min-h-16 items-center gap-3 rounded-md border border-borda bg-surface-2 px-3 py-3 sm:px-4 transition-colors hover:border-violeta-claro"
             >
-              <span className="degrade-marca flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-primaria-texto">
+              <span className="degrade-marca flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-primaria-texto sm:h-10 sm:w-10">
                 <Icone nome={a.icone} tamanho={20} />
               </span>
               <span className="min-w-0">
-                <span className="block font-semibold">{a.rotulo}</span>
-                <span className="block truncate text-xs text-muted">{a.texto}</span>
+                <span className="block text-sm font-semibold leading-tight sm:text-base">{a.rotulo}</span>
+                <span className="hidden truncate text-xs text-muted sm:block">{a.texto}</span>
               </span>
             </Link>
           ))}
